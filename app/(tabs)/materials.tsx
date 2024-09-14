@@ -1,8 +1,8 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { StyleSheet, View } from 'react-native';
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { StyleSheet, View } from "react-native";
 
-export default function HomeScreen() {
+export default function MaterialsScreen() {
   return (
     <ThemedView style={styles.page}>
       <View style={styles.header}>
