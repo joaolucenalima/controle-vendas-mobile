@@ -16,8 +16,6 @@ export default function TabLayout() {
         tabBarStyle: {
           borderRadius: 20,
           margin: 10,
-          position: 'absolute',
-          bottom: 5,
           height: 55,
           shadowColor: 'transparent',
           backgroundColor: Colors[colorScheme ?? 'light'].secondary,
@@ -30,14 +28,14 @@ export default function TabLayout() {
           fontSize: 10,
           fontWeight: 'bold',
           marginBottom: 5,
-        },
+        }
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Relatórios',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'receipt' : 'receipt-outline'} color={color} />
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name={"dashboard"} color={color} />
           ),
         }}
       />
@@ -46,8 +44,8 @@ export default function TabLayout() {
         name="transactions"
         options={{
           title: 'Transações',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'cart' : 'cart-outline'} color={color} />
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name={"swap-vert"} color={color} />
           ),
         }}
       />
@@ -56,8 +54,8 @@ export default function TabLayout() {
         name="products"
         options={{
           title: 'Produtos',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'cart' : 'cart-outline'} color={color} />
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name={'inventory'} color={color} />
           ),
         }}
       />
@@ -66,8 +64,8 @@ export default function TabLayout() {
         name="materials"
         options={{
           title: 'Materiais',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'cart' : 'cart-outline'} color={color} />
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name={'category'} color={color} />
           ),
         }}
       />
