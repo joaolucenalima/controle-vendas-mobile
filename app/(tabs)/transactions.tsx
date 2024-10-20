@@ -1,3 +1,4 @@
+import { ThemedMainButton } from "@/components/ThemedMainButton";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { TransactionTableFilter } from "@/components/TransactionsTableFilter";
@@ -22,16 +23,6 @@ export default function TransactionsScreen() {
       justifyContent: 'space-between',
       gap: 8,
     },
-    newButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 4,
-      padding: 8,
-      width: 90,
-      borderRadius: 10,
-      backgroundColor: Colors[colorScheme ?? 'light'].tint,
-    },
     tableHeader: {
       flexDirection: 'row',
       paddingVertical: 8,
@@ -51,12 +42,7 @@ export default function TransactionsScreen() {
       <View style={styles.header}>
         <ThemedText type="title">Transações</ThemedText>
 
-        <Pressable style={styles.newButton}>
-          <MaterialIcons name="add" size={24} color={"#ECEDEE"} />
-          <Text style={{ color: "#ECEDEE" }}>
-            Nova
-          </Text>
-        </Pressable>
+        <ThemedMainButton text="Novo" icon="add" onPress={() => { }} />
       </View>
 
       <TransactionTableFilter />
