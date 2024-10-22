@@ -21,20 +21,30 @@ export default function ProductsScreen() {
       gap: 8,
     },
     productContainer: {
-      width: '47%',
+      width: '48%',
       aspectRatio: 0.95,
       borderRadius: 10,
       borderWidth: 1,
       borderColor: Colors[colorScheme ?? 'light'].border,
       flexDirection: 'column',
-      alignItems: 'center',
       overflow: 'hidden',
     },
     productSubtitle: {
-      fontSize: 14,
-      textAlign: 'center',
-      margin: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      padding: 8,
+    },
+    productName: {
+      fontSize: 12,
       lineHeight: 16,
+      flexBasis: '65%',
+    },
+    productPrice: {
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: 'rgba(34, 197, 94, 0.75)',
+      flexBasis: '35%',
     }
   });
 
@@ -51,14 +61,17 @@ export default function ProductsScreen() {
         renderItem={({ item, index }) => (
           <View style={styles.productContainer} key={index}>
             <View style={{ flex: 1, borderColor: 'gray', borderWidth: 1, width: '100%' }}></View>
-            <ThemedText style={styles.productSubtitle}>Arandela redonda com pe lala</ThemedText>
+            <View style={styles.productSubtitle}>
+              <ThemedText style={styles.productName}>Arandela redonda com pe lala</ThemedText>
+              <ThemedText style={styles.productPrice}>R$ 12,00</ThemedText>
+            </View>
           </View>
         )}
         keyExtractor={(item, index) => index.toString()}
         showsVerticalScrollIndicator={true}
         numColumns={2}
         columnWrapperStyle={{ justifyContent: 'space-between' }}
-        contentContainerStyle={{ gap: 20 }}
+        contentContainerStyle={{ gap: 15 }}
       />
     </ThemedView>
   );
