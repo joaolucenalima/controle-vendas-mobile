@@ -2,6 +2,7 @@ import { ThemedMainButton } from "@/components/ThemedMainButton";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
+import { router } from "expo-router";
 import { FlatList, StyleSheet, useColorScheme, View } from "react-native";
 
 export default function ProductsScreen() {
@@ -53,7 +54,11 @@ export default function ProductsScreen() {
       <View style={styles.header}>
         <ThemedText type="title">Produtos</ThemedText>
 
-        <ThemedMainButton text="Novo" icon="add" onPress={() => { }} />
+        <ThemedMainButton
+          text="Novo"
+          icon="add"
+          onPress={() => router.push(`/product-form?action=edit`)}
+        />
       </View>
 
       <FlatList

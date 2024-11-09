@@ -1,3 +1,5 @@
+import { Colors } from '@/constants/Colors';
+import { useThemeColor } from '@/hooks/useThemeColor';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -53,9 +55,15 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? customDarkTheme : customLightTheme}>
-      <Stack>
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: Colors[colorScheme ?? 'light'].background },
+          headerTintColor: Colors[colorScheme ?? 'light'].text
+        }}
+      >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+        <Stack.Screen name="product-form" />
+        {/* <Stack.Screen name="material-form" /> */}
       </Stack>
     </ThemeProvider>
   );
