@@ -16,6 +16,9 @@ type IconSymbolName = keyof typeof MAPPING;
 const MAPPING = {
   "house.fill": "home",
   "chart.bar.fill": "show-chart",
+  "cart.fill": "shopping-cart",
+  plus: "add",
+  "chevron.left": "chevron-left",
 } as IconMapping;
 
 /**

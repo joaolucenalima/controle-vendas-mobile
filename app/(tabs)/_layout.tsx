@@ -24,6 +24,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="chart.bar.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="products"
+        options={{
+          title: "Produtos",
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="cart.fill" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
