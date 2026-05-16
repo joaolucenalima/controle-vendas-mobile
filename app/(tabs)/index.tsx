@@ -6,6 +6,7 @@ import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
+import { useRouter } from "expo-router";
 
 const METRICS = [
   { label: "Gastos", value: 120000, isCurrencyValue: true },
@@ -21,6 +22,7 @@ const SALE_PRODUCTS = [
 ];
 
 export default function HomeScreen() {
+  const router = useRouter();
   const styles = useStyles(getStyles);
   const theme = useTheme();
 
@@ -75,7 +77,7 @@ export default function HomeScreen() {
             <View style={styles.actionsSeparator} />
 
             <Pressable
-              onPress={() => {}}
+              onPress={() => router.push("/expenses-form")}
               accessibilityRole="button"
               style={({ pressed }) => [styles.actionCard, pressed && styles.cardPressed]}
             >

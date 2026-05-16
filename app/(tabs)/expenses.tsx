@@ -47,7 +47,7 @@ export default function ExpensesScreen() {
         <Text style={styles.cardTitle}>{item.title}</Text>
         <Text style={styles.cardPrice}>{formatCentsToCurrency(item.amount_in_cents)}</Text>
       </View>
-      {item.category ? <Text style={styles.cardDescription}>{item.category}</Text> : null}
+      {item.notes ? <Text style={styles.cardDescription}>{item.notes}</Text> : null}
     </Pressable>
   );
 
