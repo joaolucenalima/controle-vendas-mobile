@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
+import { TabsScreenLayout } from "@/shared/components/tabs-screen-layout";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -34,148 +34,98 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <View pointerEvents="none" style={styles.backgroundArt}>
-        <View style={styles.orbLarge} />
-        <View style={styles.orbSmall} />
-        <View style={styles.orbRing} />
-      </View>
+    <TabsScreenLayout>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.hero}>
+          <Text style={styles.title}>Painel Principal</Text>
+          <Text style={styles.todayLabel}>{todayLabel}</Text>
+        </View>
 
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.hero}>
-            <Text style={styles.title}>Painel Principal</Text>
-            <Text style={styles.todayLabel}>{todayLabel}</Text>
+        <View style={[styles.card, styles.totalProfitContainer]}>
+          <View style={styles.totalProfitLeft}>
+            <Text style={styles.totalProfitLabel}>Lucro total</Text>
+            <Text style={styles.totalProfitMargin}>Margem de 30%</Text>
           </View>
+          <Text style={styles.metricValue}>R$ 2800</Text>
+        </View>
 
-          <View style={[styles.card, styles.totalProfitContainer]}>
-            <View style={styles.totalProfitLeft}>
-              <Text style={styles.totalProfitLabel}>Lucro total</Text>
-              <Text style={styles.totalProfitMargin}>Margem de 30%</Text>
+        <View style={styles.grid}>
+          {METRICS.map((metric) => (
+            <View key={metric.label} style={[styles.card, styles.metricCard]}>
+              <Text style={styles.metricLabel}>{metric.label}</Text>
+              <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit>
+                {metric.isCurrencyValue ? formatCentsToCurrency(metric.value) : metric.value}
+              </Text>
             </View>
-            <Text style={styles.metricValue}>R$ 2800</Text>
-          </View>
+          ))}
+        </View>
 
-          <View style={styles.grid}>
-            {METRICS.map((metric) => (
-              <View key={metric.label} style={[styles.card, styles.metricCard]}>
-                <Text style={styles.metricLabel}>{metric.label}</Text>
-                <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit>
-                  {metric.isCurrencyValue ? formatCentsToCurrency(metric.value) : metric.value}
-                </Text>
+        <View>
+          <Text style={styles.sectionTitle}>Ações rápidas</Text>
+          <View style={[styles.card, styles.quickActionsContainer]}>
+            <Pressable
+              onPress={() => {}}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.actionCard, pressed && styles.cardPressed]}
+            >
+              <IconSymbol name="plus" size={24} weight="medium" color={theme.colors.green} />
+              <Text style={styles.actionTitle}>Nova venda</Text>
+            </Pressable>
+
+            <View style={styles.actionsSeparator} />
+
+            <Pressable
+              onPress={() => {}}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.actionCard, pressed && styles.cardPressed]}
+            >
+              <IconSymbol name="plus" size={24} weight="medium" color={theme.colors.red} />
+              <Text style={styles.actionTitle}>Nova despesa</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        <View>
+          <Text style={styles.sectionTitle}>Última venda</Text>
+          <View
+            style={[
+              styles.card,
+              {
+                gap: 12,
+              },
+            ]}
+          >
+            <View style={[styles.saleItem, { marginVertical: 4 }]}>
+              <Text style={styles.saleDate}>Data: 12/05/2026</Text>
+              <Text style={[styles.saleAmount, { fontSize: 18, color: theme.colors.green }]}>
+                Total: R$ 1000
+              </Text>
+            </View>
+
+            {SALE_PRODUCTS.map((item) => (
+              <View style={styles.saleItem} key={item.id}>
+                <View style={styles.saleLeft}>
+                  <Text style={styles.saleTitle}>{item.name}</Text>
+                  <Text style={styles.saleQuantity}>x{item.quantity}</Text>
+                </View>
+                <View style={{ alignItems: "flex-end" }}>
+                  <Text style={styles.saleAmount}>{item.amount}</Text>
+                </View>
               </View>
             ))}
           </View>
-
-          <View>
-            <Text style={styles.sectionTitle}>Ações rápidas</Text>
-            <View style={[styles.card, styles.quickActionsContainer]}>
-              <Pressable
-                onPress={() => {}}
-                accessibilityRole="button"
-                style={({ pressed }) => [styles.actionCard, pressed && styles.cardPressed]}
-              >
-                <IconSymbol name="plus" size={24} weight="medium" color={theme.colors.green} />
-                <Text style={styles.actionTitle}>Nova venda</Text>
-              </Pressable>
-
-              <View style={styles.actionsSeparator} />
-
-              <Pressable
-                onPress={() => {}}
-                accessibilityRole="button"
-                style={({ pressed }) => [styles.actionCard, pressed && styles.cardPressed]}
-              >
-                <IconSymbol name="plus" size={24} weight="medium" color={theme.colors.red} />
-                <Text style={styles.actionTitle}>Nova despesa</Text>
-              </Pressable>
-            </View>
-          </View>
-
-          <View>
-            <Text style={styles.sectionTitle}>Última venda</Text>
-            <View
-              style={[
-                styles.card,
-                {
-                  gap: 12,
-                },
-              ]}
-            >
-              <View style={[styles.saleItem, { marginVertical: 4 }]}>
-                <Text style={styles.saleDate}>Data: 12/05/2026</Text>
-                <Text style={[styles.saleAmount, { fontSize: 18, color: theme.colors.green }]}>
-                  Total: R$ 1000
-                </Text>
-              </View>
-
-              {SALE_PRODUCTS.map((item) => (
-                <View style={styles.saleItem} key={item.id}>
-                  <View style={styles.saleLeft}>
-                    <Text style={styles.saleTitle}>{item.name}</Text>
-                    <Text style={styles.saleQuantity}>x{item.quantity}</Text>
-                  </View>
-                  <View style={{ alignItems: "flex-end" }}>
-                    <Text style={styles.saleAmount}>{item.amount}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </View>
+        </View>
+      </ScrollView>
+    </TabsScreenLayout>
   );
 }
 
 const getStyles = ({ colors, fonts }: StylesProps) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    safeArea: {
-      flex: 1,
-    },
     content: {
       paddingHorizontal: 20,
       paddingTop: 12,
       gap: 16,
-    },
-    backgroundArt: {
-      ...StyleSheet.absoluteFillObject,
-      overflow: "hidden",
-    },
-    orbLarge: {
-      position: "absolute",
-      width: 320,
-      height: 320,
-      borderRadius: 160,
-      top: -140,
-      right: -90,
-      opacity: 0.65,
-      backgroundColor: colors.tintSoft,
-    },
-    orbSmall: {
-      position: "absolute",
-      width: 180,
-      height: 180,
-      borderRadius: 90,
-      bottom: 80,
-      left: -60,
-      opacity: 0.45,
-      backgroundColor: colors.surface,
-    },
-    orbRing: {
-      position: "absolute",
-      width: 260,
-      height: 260,
-      borderRadius: 130,
-      borderWidth: 1,
-      top: 160,
-      left: 30,
-      opacity: 0.25,
-      borderColor: colors.border,
     },
     hero: {
       gap: 8,

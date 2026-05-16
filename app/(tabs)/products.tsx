@@ -2,10 +2,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useProductStore } from "@/features/products/product-store";
 import type { Product } from "@/features/products/product.types";
+import { TabsScreenLayout } from "@/shared/components/tabs-screen-layout";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -52,13 +52,8 @@ export default function ProductsScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <View pointerEvents="none" style={styles.backgroundArt}>
-        <View style={styles.orbLarge} />
-        <View style={styles.orbSmall} />
-      </View>
-
-      <SafeAreaView style={styles.safeArea}>
+    <TabsScreenLayout>
+      <View style={styles.safeAreaContent}>
         <View style={styles.header}>
           <Text style={styles.title}>Produtos</Text>
           <Text style={styles.subtitle}>Gerencie seu catálogo</Text>
@@ -97,46 +92,18 @@ export default function ProductsScreen() {
             <IconSymbol name="plus" size={24} color={theme.colors.background} />
           </Pressable>
         )}
-      </SafeAreaView>
-    </View>
+      </View>
+    </TabsScreenLayout>
   );
 }
 
 const createStyles = ({ colors, fonts }: StylesProps) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    safeArea: {
+    safeAreaContent: {
       flex: 1,
       paddingHorizontal: 20,
       paddingTop: 12,
       paddingBottom: 20,
-    },
-    backgroundArt: {
-      ...StyleSheet.absoluteFillObject,
-      overflow: "hidden",
-    },
-    orbLarge: {
-      position: "absolute",
-      width: 280,
-      height: 280,
-      borderRadius: 140,
-      top: -120,
-      right: -100,
-      opacity: 0.55,
-      backgroundColor: colors.tintSoft,
-    },
-    orbSmall: {
-      position: "absolute",
-      width: 180,
-      height: 180,
-      borderRadius: 90,
-      bottom: 40,
-      left: -60,
-      opacity: 0.35,
-      backgroundColor: colors.surface,
     },
     header: {
       gap: 6,
