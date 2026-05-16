@@ -4,50 +4,50 @@ import { useCallback, useMemo } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useProductStore } from "@/features/products/product-store";
-import type { Product } from "@/features/products/product.types";
+import { useExpenseStore } from "@/features/expenses/expense-store";
+import type { Expense } from "@/features/expenses/expense.types";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
 
-export default function ProductsScreen() {
+export default function ExpensesScreen() {
   const router = useRouter();
   const theme = useTheme();
   const styles = useStyles(createStyles);
-  const { products, loadProducts } = useProductStore();
+  const { expenses, loadExpenses } = useExpenseStore();
 
   useFocusEffect(
     useCallback(() => {
-      loadProducts();
-    }, [loadProducts]),
+      loadExpenses();
+    }, [loadExpenses]),
   );
 
-  const hasProducts = products.length > 0;
+  const hasExpenses = expenses.length > 0;
 
-  const sortedProducts = useMemo(() => {
-    return [...products].sort((a, b) => a.name.localeCompare(b.name));
-  }, [products]);
+  const sorted = useMemo(() => {
+    return [...expenses].sort((a, b) => a.title.localeCompare(b.title));
+  }, [expenses]);
 
   function handleCreate() {
-    router.push("/products-form");
+    router.push("/expenses-form");
   }
 
-  function handleEdit(productId: number) {
-    router.push({ pathname: "/products-form", params: { id: String(productId) } });
+  function handleEdit(expenseId: number) {
+    router.push({ pathname: "/expenses-form", params: { id: String(expenseId) } });
   }
 
-  const renderItem = ({ item }: { item: Product }) => (
+  const renderItem = ({ item }: { item: Expense }) => (
     <Pressable
       onPress={() => handleEdit(item.id)}
       accessibilityRole="button"
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardPrice}>{formatCentsToCurrency(item.price_in_cents)}</Text>
+        <Text style={styles.cardTitle}>{item.title}</Text>
+        <Text style={styles.cardPrice}>{formatCentsToCurrency(item.amount_in_cents)}</Text>
       </View>
-      {item.description ? <Text style={styles.cardDescription}>{item.description}</Text> : null}
+      {item.category ? <Text style={styles.cardDescription}>{item.category}</Text> : null}
     </Pressable>
   );
 
@@ -60,13 +60,13 @@ export default function ProductsScreen() {
 
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <Text style={styles.title}>Produtos</Text>
-          <Text style={styles.subtitle}>Gerencie seu catálogo</Text>
+          <Text style={styles.title}>Despesas</Text>
+          <Text style={styles.subtitle}>Registre suas despesas</Text>
         </View>
 
-        {hasProducts ? (
+        {hasExpenses ? (
           <FlatList
-            data={sortedProducts}
+            data={sorted}
             keyExtractor={(item) => String(item.id)}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
@@ -74,21 +74,19 @@ export default function ProductsScreen() {
           />
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>Nenhum produto cadastrado</Text>
-            <Text style={styles.emptySubtitle}>
-              Cadastre seu primeiro produto e organize suas vendas.
-            </Text>
+            <Text style={styles.emptyTitle}>Nenhuma despesa cadastrada</Text>
+            <Text style={styles.emptySubtitle}>Adicione sua primeira despesa.</Text>
             <Pressable
               onPress={handleCreate}
               accessibilityRole="button"
               style={({ pressed }) => [styles.emptyButton, pressed && styles.emptyButtonPressed]}
             >
-              <Text style={styles.emptyButtonText}>Adicionar produto</Text>
+              <Text style={styles.emptyButtonText}>Adicionar despesa</Text>
             </Pressable>
           </View>
         )}
 
-        {!!hasProducts && (
+        {!!hasExpenses && (
           <Pressable
             onPress={handleCreate}
             accessibilityRole="button"
@@ -183,7 +181,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     },
     cardPrice: {
       fontSize: 14,
-      color: colors.tint,
+      color: colors.error,
       fontFamily: fonts.rounded,
       fontWeight: 500,
     },

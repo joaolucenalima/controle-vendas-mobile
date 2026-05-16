@@ -31,6 +31,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="cart.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="expenses"
+        options={{
+          title: "Despesas",
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="receipt.fill" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }

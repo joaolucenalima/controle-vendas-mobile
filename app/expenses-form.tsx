@@ -17,9 +17,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { ProductService } from "@/features/products/product-service";
-import { useProductStore } from "@/features/products/product-store";
-import type { Product } from "@/features/products/product.types";
+import { ExpenseService } from "@/features/expenses/expense-service";
+import { useExpenseStore } from "@/features/expenses/expense-store";
+import type { Expense } from "@/features/expenses/expense.types";
 import { PriceInput } from "@/shared/components/price-input";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
@@ -28,19 +28,20 @@ import { useTheme } from "@/shared/hooks/use-theme";
 const priceStringSchema = z
   .string()
   .trim()
-  .min(1, "Preço obrigatório")
+  .min(1, "Valor obrigatório")
   .refine((value) => {
     const cents = parsePriceToCents(value);
     return cents !== null && cents > 0;
-  }, "Preço inválido");
+  }, "Valor inválido");
 
-const productFormSchema = z.object({
-  name: z.string().trim().min(1, "Nome obrigatório"),
-  description: z.string().optional(),
-  price: priceStringSchema,
+const formSchema = z.object({
+  title: z.string().trim().min(1, "Título obrigatório"),
+  category: z.string().optional(),
+  notes: z.string().optional(),
+  amount: priceStringSchema,
 });
 
-type ProductFormValues = z.infer<typeof productFormSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 function parsePriceToCents(value: string): number | null {
   const cleaned = value.replace(/\s/g, "").replace(/[^0-9.,]/g, "");
@@ -68,23 +69,23 @@ function formatCentsToPriceString(cents: number): string {
   }).format(value);
 }
 
-export default function ProductsForm() {
+export default function ExpensesForm() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const isEditing = !!id;
   const router = useRouter();
   const theme = useTheme();
   const styles = useStyles(createStyles);
 
-  const { createProduct, updateProduct } = useProductStore();
+  const { createExpense, updateExpense } = useExpenseStore();
 
-  const [isLoadingProduct, setIsLoadingProduct] = useState(false);
-  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [expense, setExpense] = useState<Expense | null>(null);
 
-  const title = isEditing ? "Editar produto" : "Novo produto";
+  const title = isEditing ? "Editar despesa" : "Nova despesa";
 
-  const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productFormSchema),
-    defaultValues: { name: "", description: "", price: "" },
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { title: "", category: "", notes: "", amount: "" },
     mode: "onSubmit",
   });
 
@@ -104,27 +105,28 @@ export default function ProductsForm() {
     }
 
     let isMounted = true;
-    setIsLoadingProduct(true);
+    setIsLoading(true);
 
-    ProductService.getProductById(parsedId)
+    ExpenseService.getExpenseById(parsedId)
       .then((loaded) => {
         if (!isMounted) return;
-        setProduct(loaded);
+        setExpense(loaded);
         form.reset({
-          name: loaded.name,
-          description: loaded.description ?? "",
-          price: formatCentsToPriceString(loaded.price_in_cents),
+          title: loaded.title,
+          category: loaded.category ?? "",
+          notes: loaded.notes ?? "",
+          amount: formatCentsToPriceString(loaded.amount_in_cents),
         });
       })
       .catch((error: unknown) => {
         if (!isMounted) return;
-        const message = error instanceof Error ? error.message : "Falha ao carregar produto";
+        const message = error instanceof Error ? error.message : "Falha ao carregar despesa";
         Alert.alert("Erro", message);
         router.back();
       })
       .finally(() => {
         if (!isMounted) return;
-        setIsLoadingProduct(false);
+        setIsLoading(false);
       });
 
     return () => {
@@ -134,22 +136,24 @@ export default function ProductsForm() {
 
   const isSubmitting = form.formState.isSubmitting;
 
-  async function onSubmit(values: ProductFormValues) {
+  async function onSubmit(values: FormValues) {
     try {
-      const priceInCents = parsePriceToCents(values.price);
-      if (priceInCents === null || priceInCents <= 0) {
-        form.setError("price", { message: "Preço inválido" });
+      const amountInCents = parsePriceToCents(values.amount);
+      if (amountInCents === null || amountInCents <= 0) {
+        form.setError("amount", { message: "Valor inválido" });
         return;
       }
 
-      const name = values.name.trim();
-      const descriptionTrimmed = values.description?.trim() ?? "";
+      const titleTrimmed = values.title.trim();
+      const categoryTrimmed = values.category?.trim() ?? "";
+      const notesTrimmed = values.notes?.trim() ?? "";
 
       if (!isEditing) {
-        await createProduct({
-          name,
-          description: descriptionTrimmed ? descriptionTrimmed : undefined,
-          price_in_cents: priceInCents,
+        await createExpense({
+          title: titleTrimmed,
+          category: categoryTrimmed ? categoryTrimmed : undefined,
+          notes: notesTrimmed ? notesTrimmed : undefined,
+          amount_in_cents: amountInCents,
         });
 
         router.back();
@@ -161,15 +165,16 @@ export default function ProductsForm() {
         return;
       }
 
-      await updateProduct(parsedId, {
-        name,
-        description: descriptionTrimmed ? descriptionTrimmed : null,
-        price_in_cents: priceInCents,
+      await updateExpense(parsedId, {
+        title: titleTrimmed,
+        category: categoryTrimmed ? categoryTrimmed : null,
+        notes: notesTrimmed ? notesTrimmed : null,
+        amount_in_cents: amountInCents,
       });
 
       router.back();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Falha ao salvar produto";
+      const message = error instanceof Error ? error.message : "Falha ao salvar despesa";
       Alert.alert("Erro", message);
     }
   }
@@ -206,28 +211,28 @@ export default function ProductsForm() {
             contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
           >
-            {isLoadingProduct ? (
+            {isLoading ? (
               <View style={styles.loadingWrap}>
                 <ActivityIndicator color={theme.colors.tint} />
-                <Text style={styles.loadingText}>Carregando produto...</Text>
+                <Text style={styles.loadingText}>Carregando despesa...</Text>
               </View>
             ) : (
               <>
                 <View style={styles.section}>
-                  <Text style={styles.label}>Nome</Text>
+                  <Text style={styles.label}>Título</Text>
                   <Controller
                     control={form.control}
-                    name="name"
+                    name="title"
                     render={({ field: { onChange, onBlur, value }, fieldState }) => (
                       <>
                         <TextInput
                           value={value}
                           onChangeText={onChange}
                           onBlur={onBlur}
-                          placeholder="Ex: Café especial"
+                          placeholder="Ex: Compra de material"
                           placeholderTextColor={theme.colors.textMuted}
                           style={[styles.input, fieldState.error && styles.inputError]}
-                          autoCapitalize="words"
+                          autoCapitalize="sentences"
                           returnKeyType="next"
                         />
                         {fieldState.error?.message ? (
@@ -239,10 +244,10 @@ export default function ProductsForm() {
                 </View>
 
                 <View style={styles.section}>
-                  <Text style={styles.label}>Preço</Text>
+                  <Text style={styles.label}>Valor</Text>
                   <Controller
                     control={form.control}
-                    name="price"
+                    name="amount"
                     render={({ field: { onChange, onBlur, value }, fieldState }) => (
                       <>
                         <PriceInput
@@ -258,18 +263,42 @@ export default function ProductsForm() {
                       </>
                     )}
                   />
-                  {product ? (
+                  {expense ? (
                     <Text style={styles.helperText}>
-                      Atual: {formatCentsToPriceString(product.price_in_cents)}
+                      Atual: {formatCentsToPriceString(expense.amount_in_cents)}
                     </Text>
                   ) : null}
                 </View>
 
                 <View style={styles.section}>
-                  <Text style={styles.label}>Descrição</Text>
+                  <Text style={styles.label}>Categoria</Text>
                   <Controller
                     control={form.control}
-                    name="description"
+                    name="category"
+                    render={({ field: { onChange, onBlur, value }, fieldState }) => (
+                      <>
+                        <TextInput
+                          value={value ?? ""}
+                          onChangeText={onChange}
+                          onBlur={onBlur}
+                          placeholder="Opcional"
+                          placeholderTextColor={theme.colors.textMuted}
+                          style={[styles.input, fieldState.error && styles.inputError]}
+                          returnKeyType="next"
+                        />
+                        {fieldState.error?.message ? (
+                          <Text style={styles.errorText}>{fieldState.error.message}</Text>
+                        ) : null}
+                      </>
+                    )}
+                  />
+                </View>
+
+                <View style={styles.section}>
+                  <Text style={styles.label}>Notas</Text>
+                  <Controller
+                    control={form.control}
+                    name="notes"
                     render={({ field: { onChange, onBlur, value }, fieldState }) => (
                       <>
                         <TextInput

@@ -26,6 +26,7 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="products-form" options={{ headerShown: true }} />
+        <Stack.Screen name="expenses-form" options={{ headerShown: true }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
