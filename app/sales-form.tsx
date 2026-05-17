@@ -434,7 +434,9 @@ export default function SalesForm() {
 
       <SaleProductPickerSheet
         visible={pickerSheet !== null}
-        products={productsSorted}
+        products={productsSorted.filter(
+          (product) => !Object.keys(selectedProducts).find((id) => Number(id) === product.id),
+        )}
         pendingIds={pickerSheet?.pendingIds ?? []}
         search={pickerSheet?.search ?? ""}
         onSearchChange={(search) =>
@@ -589,4 +591,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontWeight: "600",
     },
   });
-
