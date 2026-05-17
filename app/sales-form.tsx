@@ -18,12 +18,18 @@ import { useProductStore } from "@/features/products/product-store";
 import { SaleService } from "@/features/sales/sale-service";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
+import { DatePickerField } from "@/shared/components/date-picker-field";
 import { PriceInput } from "@/shared/components/price-input";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
+import {
+  dateFilterKeyToSoldAtIso,
+  getTodayDateFilterKey,
+  soldAtIsoToDateFilterKey,
+} from "@/shared/utils/format-date-filter";
 import { SaleProductPickerSheet } from "@/widgets/sales/sale-product-picker-sheet";
 import { SaleSelectedProductItem } from "@/widgets/sales/sale-selected-product-item";
 
@@ -65,7 +71,7 @@ export default function SalesForm() {
     {},
   );
   const [discountInCents, setDiscountInCents] = useState<number | null>(null);
-  const [saleSoldAt, setSaleSoldAt] = useState("");
+  const [saleDate, setSaleDate] = useState(getTodayDateFilterKey);
   const [pickerSheet, setPickerSheet] = useState<ProductPickerSheetState | null>(null);
 
   const isEditing = !!id;
@@ -113,7 +119,7 @@ export default function SalesForm() {
         if (!isMounted) return;
         setExistingSale(loaded);
         setDiscountInCents(loaded.discount_in_cents > 0 ? loaded.discount_in_cents : null);
-        setSaleSoldAt(loaded.sold_at);
+        setSaleDate(soldAtIsoToDateFilterKey(loaded.sold_at));
         form.reset({ notes: loaded.notes ?? "" });
 
         const nextSelected = loaded.items.reduce<Record<number, SelectedProductState>>(
@@ -260,11 +266,14 @@ export default function SalesForm() {
 
       const notes = values.notes?.trim();
 
+      const soldAt = dateFilterKeyToSoldAtIso(saleDate);
+
       if (!isEditing) {
         await createSale({
           total_in_cents: totalInCents,
           discount_in_cents: appliedDiscountInCents,
           notes: notes ? notes : undefined,
+          sold_at: soldAt,
           items,
         });
 
@@ -282,7 +291,7 @@ export default function SalesForm() {
           total_in_cents: totalInCents,
           discount_in_cents: appliedDiscountInCents,
           notes: notes ? notes : null,
-          sold_at: saleSoldAt || existingSale.sold_at,
+          sold_at: soldAt,
         },
         items,
       });
@@ -303,6 +312,16 @@ export default function SalesForm() {
         </View>
       ) : (
         <>
+          <View>
+            <Text style={styles.sectionTitle}>Data da venda</Text>
+            <DatePickerField
+              label="Data"
+              value={saleDate}
+              onChange={setSaleDate}
+              placeholder="Selecionar data"
+            />
+          </View>
+
           <View>
             <Text style={styles.sectionTitle}>Produtos selecionados</Text>
 

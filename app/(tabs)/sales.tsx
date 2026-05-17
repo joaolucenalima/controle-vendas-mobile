@@ -1,12 +1,14 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useProductStore } from "@/features/products/product-store";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
+import { DatePickerField } from "@/shared/components/date-picker-field";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import { parseDateFilterKey } from "@/shared/utils/format-date-filter";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
@@ -39,6 +41,16 @@ export default function SalesScreen() {
   }, [products]);
 
   const totalFiltered = sales.length;
+
+  const initialDateLimit = useMemo(
+    () => parseDateFilterKey(draftFinalDate) ?? undefined,
+    [draftFinalDate],
+  );
+
+  const finalDateLimit = useMemo(
+    () => parseDateFilterKey(draftInitialDate) ?? undefined,
+    [draftInitialDate],
+  );
 
   function handleCreate() {
     router.push("/sales-form" as never);
@@ -91,27 +103,21 @@ export default function SalesScreen() {
         <Text style={styles.filterTitle}>Período</Text>
 
         <View style={styles.filterInputs}>
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Inicial</Text>
-            <TextInput
-              value={draftInitialDate}
-              onChangeText={setDraftInitialDate}
-              placeholder="AAAA-MM-DD"
-              placeholderTextColor={theme.colors.textMuted}
-              style={styles.input}
-            />
-          </View>
+          <DatePickerField
+            label="Inicial"
+            value={draftInitialDate}
+            onChange={setDraftInitialDate}
+            placeholder="Data inicial"
+            maximumDate={initialDateLimit}
+          />
 
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Final</Text>
-            <TextInput
-              value={draftFinalDate}
-              onChangeText={setDraftFinalDate}
-              placeholder="AAAA-MM-DD"
-              placeholderTextColor={theme.colors.textMuted}
-              style={styles.input}
-            />
-          </View>
+          <DatePickerField
+            label="Final"
+            value={draftFinalDate}
+            onChange={setDraftFinalDate}
+            placeholder="Data final"
+            minimumDate={finalDateLimit}
+          />
         </View>
 
         <View style={styles.filterActions}>
@@ -213,25 +219,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     filterInputs: {
       flexDirection: "row",
       gap: 12,
-    },
-    field: {
-      flex: 1,
-      gap: 6,
-    },
-    fieldLabel: {
-      fontSize: 12,
-      color: colors.textMuted,
-      fontFamily: fonts.sans,
-    },
-    input: {
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.surface,
-      borderRadius: 14,
-      paddingHorizontal: 12,
-      paddingVertical: 12,
-      color: colors.text,
-      fontFamily: fonts.sans,
     },
     filterActions: {
       flexDirection: "row",
