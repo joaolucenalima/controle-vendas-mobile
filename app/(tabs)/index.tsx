@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { TabsScreenLayout } from "@/shared/components/tabs-screen-layout";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
+import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
 import { useRouter } from "expo-router";
 
@@ -66,7 +66,7 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Ações rápidas</Text>
           <View style={[styles.card, styles.quickActionsContainer]}>
             <Pressable
-              onPress={() => {}}
+              onPress={() => router.push("/sales-form" as never)}
               accessibilityRole="button"
               style={({ pressed }) => [styles.actionCard, pressed && styles.cardPressed]}
             >

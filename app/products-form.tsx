@@ -70,7 +70,6 @@ function formatCentsToPriceString(cents: number): string {
 
 export default function ProductsForm() {
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const isEditing = !!id;
   const router = useRouter();
   const theme = useTheme();
   const styles = useStyles(createStyles);
@@ -80,6 +79,7 @@ export default function ProductsForm() {
   const [isLoadingProduct, setIsLoadingProduct] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
 
+  const isEditing = !!id;
   const title = isEditing ? "Editar produto" : "Novo produto";
 
   const form = useForm<ProductFormValues>({

@@ -17,7 +17,12 @@ const MAPPING = {
   "house.fill": "home",
   "chart.bar.fill": "show-chart",
   "cart.fill": "shopping-cart",
+  "banknote.fill": "payments",
   plus: "add",
+  minus: "remove",
+  trash: "delete",
+  xmark: "close",
+  magnifyingglass: "search",
   "chevron.left": "chevron-left",
 } as IconMapping;
 

@@ -5,10 +5,10 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useExpenseStore } from "@/features/expenses/expense-store";
 import type { Expense } from "@/features/expenses/expense.types";
-import { TabsScreenLayout } from "@/shared/components/tabs-screen-layout";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
+import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
 
 export default function ExpensesScreen() {
