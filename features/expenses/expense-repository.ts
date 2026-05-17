@@ -11,16 +11,28 @@ export const ExpenseRepository = {
     return expense ?? null;
   },
 
-  async getTotalAmountInCents({
-    initialDate,
-    finalDate,
-  }: {
-    initialDate: string;
-    finalDate: string;
+  async getTotalAmountInCents(filters?: {
+    initialDate?: string;
+    finalDate?: string;
   }): Promise<number> {
+    const where: string[] = [];
+    const params: string[] = [];
+
+    if (filters?.initialDate) {
+      where.push("created_at >= ?");
+      params.push(`${filters.initialDate}T00:00:00.000Z`);
+    }
+
+    if (filters?.finalDate) {
+      where.push("created_at <= ?");
+      params.push(`${filters.finalDate}T23:59:59.999Z`);
+    }
+
+    const clause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+
     const result = await db.getFirstAsync<{ total: number }>(
-      "SELECT SUM(amount_in_cents) as total FROM expenses WHERE created_at BETWEEN ? AND ?",
-      [initialDate, finalDate],
+      `SELECT SUM(amount_in_cents) as total FROM expenses ${clause}`,
+      params,
     );
 
     return result?.total ?? 0;

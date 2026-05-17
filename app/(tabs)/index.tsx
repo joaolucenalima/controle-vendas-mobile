@@ -1,16 +1,20 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useDashboardStore } from "@/features/dashboard/dashboard-store";
 import { useProductStore } from "@/features/products/product-store";
+import { DatePickerField } from "@/shared/components/date-picker-field";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
-import { getTodayDateFilterKey } from "@/shared/utils/format-date-filter";
+import {
+  formatDateFilterDisplay,
+  parseDateFilterKey,
+} from "@/shared/utils/format-date-filter";
 
 function formatSaleDate(value: string) {
   return new Intl.DateTimeFormat("pt-BR", {
@@ -29,6 +33,10 @@ export default function HomeScreen() {
   const { products, loadProducts } = useProductStore();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [draftInitialDate, setDraftInitialDate] = useState("");
+  const [draftFinalDate, setDraftFinalDate] = useState("");
+  const [appliedInitialDate, setAppliedInitialDate] = useState<string | undefined>(undefined);
+  const [appliedFinalDate, setAppliedFinalDate] = useState<string | undefined>(undefined);
 
   const todayLabel = useMemo(() => {
     const now = new Date();
@@ -50,6 +58,30 @@ export default function HomeScreen() {
   const marginPercent =
     metrics.salesAmount > 0 ? Math.round((profitInCents / metrics.salesAmount) * 100) : null;
 
+  const initialDateLimit = useMemo(
+    () => parseDateFilterKey(draftFinalDate) ?? undefined,
+    [draftFinalDate],
+  );
+
+  const finalDateLimit = useMemo(
+    () => parseDateFilterKey(draftInitialDate) ?? undefined,
+    [draftInitialDate],
+  );
+
+  const periodLabel = useMemo(() => {
+    if (!appliedInitialDate && !appliedFinalDate) return "Todo o período";
+
+    if (appliedInitialDate && appliedFinalDate) {
+      return `${formatDateFilterDisplay(appliedInitialDate)} — ${formatDateFilterDisplay(appliedFinalDate)}`;
+    }
+
+    if (appliedInitialDate) {
+      return `A partir de ${formatDateFilterDisplay(appliedInitialDate)}`;
+    }
+
+    return `Até ${formatDateFilterDisplay(appliedFinalDate!)}`;
+  }, [appliedFinalDate, appliedInitialDate]);
+
   const metricCards = useMemo(
     () => [
       { label: "Gastos", value: metrics.expensesAmount, isCurrencyValue: true },
@@ -60,26 +92,54 @@ export default function HomeScreen() {
     [metrics],
   );
 
+  const metricsParams = useMemo(() => {
+    if (!appliedInitialDate && !appliedFinalDate) return undefined;
+    return { initialDate: appliedInitialDate, finalDate: appliedFinalDate };
+  }, [appliedFinalDate, appliedInitialDate]);
+
   useFocusEffect(
     useCallback(() => {
       let isMounted = true;
-      const today = getTodayDateFilterKey();
 
       setIsLoading(true);
 
-      Promise.all([
-        loadProducts(),
-        loadMetrics({ initialDate: today, finalDate: today }),
-        loadLastSale(),
-      ]).finally(() => {
+      Promise.all([loadProducts(), loadMetrics(metricsParams), loadLastSale()]).finally(() => {
         if (isMounted) setIsLoading(false);
       });
 
       return () => {
         isMounted = false;
       };
-    }, [loadLastSale, loadMetrics, loadProducts]),
+    }, [loadLastSale, loadMetrics, loadProducts, metricsParams]),
   );
+
+  async function handleApplyFilters() {
+    if (draftInitialDate && draftFinalDate && draftInitialDate > draftFinalDate) {
+      Alert.alert("Erro", "A data inicial deve ser menor ou igual à data final");
+      return;
+    }
+
+    const nextInitial = draftInitialDate || undefined;
+    const nextFinal = draftFinalDate || undefined;
+
+    setAppliedInitialDate(nextInitial);
+    setAppliedFinalDate(nextFinal);
+
+    setIsLoading(true);
+    await loadMetrics(
+      nextInitial || nextFinal ? { initialDate: nextInitial, finalDate: nextFinal } : undefined,
+    );
+    setIsLoading(false);
+  }
+
+  function handleClearFilters() {
+    setDraftInitialDate("");
+    setDraftFinalDate("");
+    setAppliedInitialDate(undefined);
+    setAppliedFinalDate(undefined);
+    setIsLoading(true);
+    loadMetrics().finally(() => setIsLoading(false));
+  }
 
   return (
     <TabsScreenLayout>
@@ -88,6 +148,48 @@ export default function HomeScreen() {
           <Text style={styles.title}>Painel Principal</Text>
           <Text style={styles.todayLabel}>{todayLabel}</Text>
         </View>
+
+        <View style={styles.filterCard}>
+          <Text style={styles.filterTitle}>Período</Text>
+
+          <View style={styles.filterInputs}>
+            <DatePickerField
+              label="Inicial"
+              value={draftInitialDate}
+              onChange={setDraftInitialDate}
+              placeholder="Data inicial"
+              maximumDate={initialDateLimit}
+            />
+
+            <DatePickerField
+              label="Final"
+              value={draftFinalDate}
+              onChange={setDraftFinalDate}
+              placeholder="Data final"
+              minimumDate={finalDateLimit}
+            />
+          </View>
+
+          <View style={styles.filterActions}>
+            <Pressable
+              onPress={handleApplyFilters}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.filterButton, pressed && styles.filterButtonPressed]}
+            >
+              <Text style={styles.filterButtonText}>Filtrar</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={handleClearFilters}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
+            >
+              <Text style={styles.clearButtonText}>Limpar</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        <Text style={styles.periodLabel}>{periodLabel}</Text>
 
         <View style={[styles.card, styles.totalProfitContainer]}>
           <View style={styles.totalProfitLeft}>
@@ -205,6 +307,66 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
       letterSpacing: 1.4,
       color: colors.textMuted,
       fontFamily: fonts.sans,
+    },
+    filterCard: {
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceElevated,
+      padding: 16,
+      gap: 12,
+    },
+    filterTitle: {
+      fontSize: 16,
+      color: colors.text,
+      fontFamily: fonts.rounded,
+      fontWeight: "600",
+    },
+    filterInputs: {
+      flexDirection: "row",
+      gap: 12,
+    },
+    filterActions: {
+      flexDirection: "row",
+      gap: 10,
+    },
+    filterButton: {
+      flex: 1,
+      borderRadius: 14,
+      paddingVertical: 12,
+      alignItems: "center",
+      backgroundColor: colors.tint,
+    },
+    filterButtonPressed: {
+      opacity: 0.85,
+    },
+    filterButtonText: {
+      color: colors.background,
+      fontSize: 14,
+      fontFamily: fonts.rounded,
+      fontWeight: "600",
+    },
+    clearButton: {
+      flex: 1,
+      borderRadius: 14,
+      paddingVertical: 12,
+      alignItems: "center",
+      backgroundColor: colors.surface,
+    },
+    clearButtonPressed: {
+      opacity: 0.85,
+    },
+    clearButtonText: {
+      color: colors.text,
+      fontSize: 14,
+      fontFamily: fonts.rounded,
+      fontWeight: "600",
+    },
+    periodLabel: {
+      fontSize: 13,
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
+      paddingHorizontal: 4,
     },
     totalProfitContainer: {
       flexDirection: "row",

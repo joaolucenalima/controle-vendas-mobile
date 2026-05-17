@@ -10,7 +10,7 @@ export interface DashboardMetrics {
 export interface DashboardState {
   metrics: DashboardMetrics;
   lastSale: SaleWithItems | null;
-  loadMetrics: (params: { initialDate: string; finalDate: string }) => Promise<void>;
+  loadMetrics: (params?: { initialDate?: string; finalDate?: string }) => Promise<void>;
   loadLastSale: () => Promise<void>;
 }
 

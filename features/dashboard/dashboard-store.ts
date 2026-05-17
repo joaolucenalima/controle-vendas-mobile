@@ -13,7 +13,7 @@ export const useDashboardStore = create<DashboardState>((set, _get) => ({
   metrics: emptyMetrics,
   lastSale: null,
 
-  loadMetrics: async (params: { initialDate: string; finalDate: string }) => {
+  loadMetrics: async (params) => {
     const metrics = await DashboardService.getMetrics(params);
     set({ metrics });
   },
