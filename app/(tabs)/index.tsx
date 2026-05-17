@@ -1,30 +1,34 @@
-import { useMemo } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { useDashboardStore } from "@/features/dashboard/dashboard-store";
+import { useProductStore } from "@/features/products/product-store";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
-import { useRouter } from "expo-router";
+import { getTodayDateFilterKey } from "@/shared/utils/format-date-filter";
 
-const METRICS = [
-  { label: "Gastos", value: 120000, isCurrencyValue: true },
-  { label: "Receita", value: 400000, isCurrencyValue: true },
-  { label: "Produtos", value: 350, isCurrencyValue: false },
-  { label: "Vendas", value: 4, isCurrencyValue: false },
-];
-
-const SALE_PRODUCTS = [
-  { id: "1", name: "Arandela", quantity: "20", amount: "R$ 280" },
-  { id: "2", name: "Redondinha", quantity: "15", amount: "R$ 170" },
-  { id: "3", name: "Quadrada", quantity: "12", amount: "R$ 120" },
-];
+function formatSaleDate(value: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(value));
+}
 
 export default function HomeScreen() {
   const router = useRouter();
   const styles = useStyles(getStyles);
   const theme = useTheme();
+
+  const { metrics, lastSale, loadMetrics, loadLastSale } = useDashboardStore();
+  const { products, loadProducts } = useProductStore();
+
+  const [isLoading, setIsLoading] = useState(true);
 
   const todayLabel = useMemo(() => {
     const now = new Date();
@@ -34,6 +38,48 @@ export default function HomeScreen() {
       month: "short",
     });
   }, []);
+
+  const productNamesById = useMemo(() => {
+    return products.reduce<Record<number, string>>((accumulator, product) => {
+      accumulator[product.id] = product.name;
+      return accumulator;
+    }, {});
+  }, [products]);
+
+  const profitInCents = metrics.salesAmount - metrics.expensesAmount;
+  const marginPercent =
+    metrics.salesAmount > 0 ? Math.round((profitInCents / metrics.salesAmount) * 100) : null;
+
+  const metricCards = useMemo(
+    () => [
+      { label: "Gastos", value: metrics.expensesAmount, isCurrencyValue: true },
+      { label: "Receita", value: metrics.salesAmount, isCurrencyValue: true },
+      { label: "Produtos", value: metrics.totalItems, isCurrencyValue: false },
+      { label: "Vendas", value: metrics.totalSales, isCurrencyValue: false },
+    ],
+    [metrics],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+      const today = getTodayDateFilterKey();
+
+      setIsLoading(true);
+
+      Promise.all([
+        loadProducts(),
+        loadMetrics({ initialDate: today, finalDate: today }),
+        loadLastSale(),
+      ]).finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+      return () => {
+        isMounted = false;
+      };
+    }, [loadLastSale, loadMetrics, loadProducts]),
+  );
 
   return (
     <TabsScreenLayout>
@@ -46,13 +92,22 @@ export default function HomeScreen() {
         <View style={[styles.card, styles.totalProfitContainer]}>
           <View style={styles.totalProfitLeft}>
             <Text style={styles.totalProfitLabel}>Lucro total</Text>
-            <Text style={styles.totalProfitMargin}>Margem de 30%</Text>
+            <Text style={styles.totalProfitMargin}>
+              {marginPercent !== null ? `Margem de ${marginPercent}%` : "Sem receita no período"}
+            </Text>
           </View>
-          <Text style={styles.metricValue}>R$ 2800</Text>
+          <Text
+            style={[
+              styles.metricValue,
+              profitInCents >= 0 ? styles.profitPositive : styles.profitNegative,
+            ]}
+          >
+            {formatCentsToCurrency(profitInCents)}
+          </Text>
         </View>
 
         <View style={styles.grid}>
-          {METRICS.map((metric) => (
+          {metricCards.map((metric) => (
             <View key={metric.label} style={[styles.card, styles.metricCard]}>
               <Text style={styles.metricLabel}>{metric.label}</Text>
               <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit>
@@ -89,32 +144,37 @@ export default function HomeScreen() {
 
         <View>
           <Text style={styles.sectionTitle}>Última venda</Text>
-          <View
-            style={[
-              styles.card,
-              {
-                gap: 12,
-              },
-            ]}
-          >
-            <View style={[styles.saleItem, { marginVertical: 4 }]}>
-              <Text style={styles.saleDate}>Data: 12/05/2026</Text>
-              <Text style={[styles.saleAmount, { fontSize: 18, color: theme.colors.green }]}>
-                Total: R$ 1000
-              </Text>
-            </View>
+          <View style={[styles.card, styles.lastSaleCard]}>
+            {isLoading ? (
+              <ActivityIndicator color={theme.colors.tint} />
+            ) : lastSale === null ? (
+              <Text style={styles.emptyText}>Nenhuma venda registrada</Text>
+            ) : (
+              <>
+                <View style={[styles.saleItem, styles.lastSaleHeader]}>
+                  <Text style={styles.saleDate}>Data: {formatSaleDate(lastSale.sold_at)}</Text>
+                  <Text style={[styles.saleAmount, styles.lastSaleTotal]}>
+                    Total: {formatCentsToCurrency(lastSale.total_in_cents)}
+                  </Text>
+                </View>
 
-            {SALE_PRODUCTS.map((item) => (
-              <View style={styles.saleItem} key={item.id}>
-                <View style={styles.saleLeft}>
-                  <Text style={styles.saleTitle}>{item.name}</Text>
-                  <Text style={styles.saleQuantity}>x{item.quantity}</Text>
-                </View>
-                <View style={{ alignItems: "flex-end" }}>
-                  <Text style={styles.saleAmount}>{item.amount}</Text>
-                </View>
-              </View>
-            ))}
+                {lastSale.items.map((item) => (
+                  <View style={styles.saleItem} key={item.id}>
+                    <View style={styles.saleLeft}>
+                      <Text style={styles.saleTitle}>
+                        {productNamesById[item.product_id] ?? `Produto #${item.product_id}`}
+                      </Text>
+                      <Text style={styles.saleQuantity}>x{item.quantity}</Text>
+                    </View>
+                    <View style={styles.saleRight}>
+                      <Text style={styles.saleAmount}>
+                        {formatCentsToCurrency(item.subtotal_in_cents)}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -166,6 +226,12 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
     totalProfitMargin: {
       color: colors.text,
       fontWeight: "500",
+    },
+    profitPositive: {
+      color: colors.green,
+    },
+    profitNegative: {
+      color: colors.red,
     },
     sectionTitle: {
       fontSize: 18,
@@ -227,6 +293,16 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
       color: colors.text,
       fontFamily: fonts.rounded,
     },
+    lastSaleCard: {
+      gap: 12,
+      minHeight: 80,
+      justifyContent: "center",
+    },
+    emptyText: {
+      textAlign: "center",
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
+    },
     saleDate: {
       fontSize: 16,
       fontWeight: "500",
@@ -238,9 +314,19 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
       alignItems: "center",
       gap: 8,
     },
+    lastSaleHeader: {
+      marginVertical: 4,
+    },
+    lastSaleTotal: {
+      fontSize: 18,
+      color: colors.green,
+    },
     saleLeft: {
       flex: 1,
       gap: 4,
+    },
+    saleRight: {
+      alignItems: "flex-end",
     },
     saleTitle: {
       fontSize: 15,
@@ -257,4 +343,3 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.rounded,
     },
   });
-

@@ -1,12 +1,12 @@
 import { db } from "@/database/sqlite";
 import {
-    CreateSaleDTO,
-    CreateSaleItemDTO,
-    Sale,
-    SaleItem,
-    SaleListFilters,
-    SaleWithItems,
-    UpdateSaleDTO,
+  CreateSaleDTO,
+  CreateSaleItemDTO,
+  Sale,
+  SaleItem,
+  SaleListFilters,
+  SaleWithItems,
+  UpdateSaleDTO,
 } from "./sale.types";
 
 type DatabaseLike = Pick<typeof db, "runAsync" | "getFirstAsync" | "getAllAsync" | "execAsync">;
@@ -183,6 +183,45 @@ export const SaleRepository = {
 
   async findItemsBySaleId(saleId: number): Promise<SaleItem[]> {
     return await findItemsBySaleId(db, saleId);
+  },
+
+  async getLastSale(): Promise<SaleWithItems | null> {
+    const sale = await db.getFirstAsync<Sale>("SELECT * FROM sales ORDER BY sold_at DESC, id DESC");
+    if (!sale) {
+      return null;
+    }
+
+    const items = await findItemsBySaleId(db, sale.id);
+    return { ...sale, items };
+  },
+
+  async getTotalAmountInCents(filters: SaleListFilters): Promise<number> {
+    const { clause, params } = buildDateFilter(filters);
+    const result = await db.getFirstAsync<{ total: number }>(
+      `SELECT SUM(total_in_cents - discount_in_cents) as total FROM sales ${clause}`,
+      params,
+    );
+
+    return result?.total ?? 0;
+  },
+
+  async getTotalItemsSold(filters: SaleListFilters) {
+    const { clause, params } = buildDateFilter(filters);
+
+    const totalItems = await db.getFirstAsync<{ total: number }>(
+      `SELECT SUM(si.quantity) as total FROM sales s JOIN sale_items si ON s.id = si.sale_id ${clause}`,
+      params,
+    );
+
+    const totalSales = await db.getFirstAsync<{ total: number }>(
+      `SELECT COUNT(*) as total FROM sales ${clause}`,
+      params,
+    );
+
+    return {
+      totalItems: totalItems?.total ?? 0,
+      totalSales: totalSales?.total ?? 0,
+    };
   },
 
   async create(data: CreateSaleDTO): Promise<SaleWithItems> {

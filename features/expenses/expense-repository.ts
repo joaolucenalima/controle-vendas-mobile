@@ -11,6 +11,21 @@ export const ExpenseRepository = {
     return expense ?? null;
   },
 
+  async getTotalAmountInCents({
+    initialDate,
+    finalDate,
+  }: {
+    initialDate: string;
+    finalDate: string;
+  }): Promise<number> {
+    const result = await db.getFirstAsync<{ total: number }>(
+      "SELECT SUM(amount_in_cents) as total FROM expenses WHERE created_at BETWEEN ? AND ?",
+      [initialDate, finalDate],
+    );
+
+    return result?.total ?? 0;
+  },
+
   async create({ title, amount_in_cents, category, notes }: CreateExpenseDTO): Promise<Expense> {
     const createdAt = new Date().toISOString();
 
