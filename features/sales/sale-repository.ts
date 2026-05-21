@@ -195,7 +195,7 @@ export const SaleRepository = {
     return { ...sale, items };
   },
 
-  async getTotalAmountInCents(filters: SaleListFilters): Promise<number> {
+  async getTotalAmountInCents(filters?: SaleListFilters): Promise<number> {
     const { clause, params } = buildDateFilter(filters);
     const result = await db.getFirstAsync<{ total: number }>(
       `SELECT SUM(total_in_cents - discount_in_cents) as total FROM sales ${clause}`,
@@ -205,7 +205,7 @@ export const SaleRepository = {
     return result?.total ?? 0;
   },
 
-  async getTotalItemsSold(filters: SaleListFilters) {
+  async getTotalItemsSold(filters?: SaleListFilters) {
     const { clause, params } = buildDateFilter(filters);
 
     const totalItems = await db.getFirstAsync<{ total: number }>(
