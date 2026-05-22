@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import { ExpenseService } from "./expense-service";
-import { CreateExpenseDTO, Expense, UpdateExpenseDTO } from "./expense.types";
+import { CreateExpenseDTO, Expense, ExpenseWithMaterials, UpdateExpenseDTO } from "./expense.types";
 
 type ExpenseStoreState = {
   expenses: Expense[];
   loadExpenses: () => Promise<void>;
-  createExpense: (data: CreateExpenseDTO) => Promise<Expense>;
-  updateExpense: (id: number, data: UpdateExpenseDTO) => Promise<Expense>;
+  createExpense: (data: CreateExpenseDTO) => Promise<ExpenseWithMaterials>;
+  updateExpense: (id: number, data: UpdateExpenseDTO) => Promise<ExpenseWithMaterials>;
   deleteExpense: (id: number) => Promise<void>;
 };
 

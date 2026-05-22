@@ -1,0 +1,144 @@
+import { Pressable, StyleSheet, Text, View } from "react-native";
+
+import type { Material } from "@/features/materials/material.types";
+import { PriceInput } from "@/shared/components/price-input";
+import { QuantityInput } from "@/shared/components/quantity-input";
+import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
+import { useTheme } from "@/shared/hooks/use-theme";
+import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
+
+type ExpenseSelectedMaterialItemProps = {
+  material: Material;
+  quantity: number;
+  unitPriceInCents: number;
+  onQuantityChange: (quantity: number) => void;
+  onUnitPriceChange: (unitPriceInCents: number) => void;
+  onRemove: () => void;
+};
+
+function parsePriceDigitsToCents(value: string): number {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return 0;
+
+  const cents = Number(digits);
+  return Number.isFinite(cents) ? cents : 0;
+}
+
+export function ExpenseSelectedMaterialItem({
+  material,
+  quantity,
+  unitPriceInCents,
+  onQuantityChange,
+  onUnitPriceChange,
+  onRemove,
+}: ExpenseSelectedMaterialItemProps) {
+  const theme = useTheme();
+  const styles = useStyles(createStyles);
+  const lineTotal = quantity * unitPriceInCents;
+
+  return (
+    <View style={styles.card}>
+      <Pressable
+        onPress={onRemove}
+        accessibilityRole="button"
+        accessibilityLabel={`Remover ${material.name}`}
+        hitSlop={8}
+        style={({ pressed }) => [styles.removeButton, pressed && styles.removePressed]}
+      >
+        <IconSymbol name="trash" size={18} color={theme.colors.error} />
+      </Pressable>
+
+      <View style={styles.materialInfo}>
+        <Text style={styles.materialName}>{material.name}</Text>
+        {material.price_in_cents !== null ? (
+          <Text style={styles.materialBasePrice}>
+            Base: {formatCentsToCurrency(material.price_in_cents)}
+          </Text>
+        ) : (
+          <Text style={styles.materialBasePriceMuted}>Sem preço cadastrado</Text>
+        )}
+      </View>
+
+      <View style={styles.rightArea}>
+        <QuantityInput value={quantity} onChange={onQuantityChange} />
+
+        <PriceInput
+          value={String(unitPriceInCents)}
+          onChangeText={(text) => onUnitPriceChange(parsePriceDigitsToCents(text))}
+          placeholder="R$ 0,00"
+          style={styles.unitPriceInput}
+        />
+
+        <Text style={styles.lineTotal}>{formatCentsToCurrency(lineTotal)}</Text>
+      </View>
+    </View>
+  );
+}
+
+const createStyles = ({ colors, fonts }: StylesProps) =>
+  StyleSheet.create({
+    card: {
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceElevated,
+      padding: 10,
+      flexDirection: "row",
+      gap: 12,
+      alignItems: "center",
+    },
+    materialInfo: {
+      flex: 1,
+      gap: 6,
+    },
+    materialName: {
+      fontSize: 15,
+      color: colors.text,
+      fontFamily: fonts.rounded,
+      fontWeight: "600",
+    },
+    materialBasePrice: {
+      fontSize: 13,
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
+    },
+    materialBasePriceMuted: {
+      fontSize: 13,
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
+      fontStyle: "italic",
+    },
+    removeButton: {
+      padding: 4,
+    },
+    removePressed: {
+      opacity: 0.7,
+    },
+    rightArea: {
+      alignItems: "flex-end",
+      gap: 8,
+    },
+    unitPriceInput: {
+      minWidth: 112,
+      height: 32,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      paddingHorizontal: 8,
+      textAlign: "center",
+      color: colors.text,
+      fontFamily: fonts.rounded,
+      fontWeight: "600",
+      fontSize: 14,
+    },
+    lineTotal: {
+      fontSize: 14,
+      color: colors.text,
+      fontFamily: fonts.rounded,
+      fontWeight: "700",
+      minWidth: 88,
+      textAlign: "right",
+    },
+  });

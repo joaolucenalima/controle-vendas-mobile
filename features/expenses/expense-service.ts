@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ExpenseRepository } from "./expense-repository";
-import { CreateExpenseDTO, UpdateExpenseDTO } from "./expense.types";
+import { CreateExpenseDTO, ExpenseWithMaterials, UpdateExpenseDTO } from "./expense.types";
 
 function parseOrThrow<T>(
   schema: z.ZodType<T>,
@@ -22,18 +22,25 @@ function parseOrThrow<T>(
 
 const idSchema = z.number().int().positive();
 
+const expenseMaterialSchema = z.object({
+  material_id: z.number().int().positive("Material inválido"),
+  quantity: z.number().int().positive("Quantidade inválida"),
+  material_price_in_cents: z.number().int().positive("Preço inválido"),
+  subtotal_in_cents: z.number().int().positive("Subtotal inválido"),
+});
+
 const createExpenseSchema = z.object({
   title: z.string().trim().min(1, "Título obrigatório"),
   amount_in_cents: z.number().int("Valor inválido").positive("Valor inválido"),
-  category: z.string().optional(),
   notes: z.string().optional(),
+  materials: z.array(expenseMaterialSchema).min(1, "Adicione ao menos um material"),
 });
 
 const updateExpenseSchema = z.object({
   title: z.string().trim().min(1, "Título obrigatório").optional(),
   amount_in_cents: z.number().int("Valor inválido").positive("Valor inválido").optional(),
-  category: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
+  materials: z.array(expenseMaterialSchema).min(1, "Adicione ao menos um material").optional(),
 });
 
 export const ExpenseService = {
@@ -41,7 +48,7 @@ export const ExpenseService = {
     return await ExpenseRepository.findAll();
   },
 
-  async getExpenseById(id: number) {
+  async getExpenseById(id: number): Promise<ExpenseWithMaterials> {
     const parsedId = parseOrThrow(idSchema, id, { fallbackMessage: "ID inválido" });
 
     const expense = await ExpenseRepository.findById(parsedId);
@@ -59,6 +66,7 @@ export const ExpenseService = {
         const field = issue.path[0];
         if (field === "title") return "Título obrigatório";
         if (field === "amount_in_cents") return "Valor inválido";
+        if (field === "materials") return "Adicione ao menos um material";
         return undefined;
       },
     });
@@ -73,6 +81,7 @@ export const ExpenseService = {
         const field = issue.path[0];
         if (field === "title") return "Título obrigatório";
         if (field === "amount_in_cents") return "Valor inválido";
+        if (field === "materials") return "Adicione ao menos um material";
         return undefined;
       },
     });

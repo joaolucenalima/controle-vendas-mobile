@@ -29,6 +29,7 @@ const MAPPING = {
   xmark: "close",
   magnifyingglass: "search",
   "chevron.left": "chevron-left",
+  "chevron.down": "expand-more",
 } as IconMapping;
 
 /**
