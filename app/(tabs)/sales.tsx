@@ -8,10 +8,10 @@ import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
 import { DatePickerField } from "@/shared/components/date-picker-field";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
-import { parseDateFilterKey } from "@/shared/utils/format-date-filter";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
+import { parseDateFilterKey } from "@/shared/utils/format-date-filter";
 import { SaleCollapsibleCard } from "@/widgets/sales/sale-collapsible-card";
 
 export default function SalesScreen() {
@@ -53,11 +53,11 @@ export default function SalesScreen() {
   );
 
   function handleCreate() {
-    router.push("/sales-form" as never);
+    router.push("/sales-form");
   }
 
   function handleEdit(saleId: number) {
-    router.push({ pathname: "/sales-form" as never, params: { id: String(saleId) } });
+    router.push({ pathname: "/sales-form", params: { id: String(saleId) } });
   }
 
   async function handleApplyFilters() {

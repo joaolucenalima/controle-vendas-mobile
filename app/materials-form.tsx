@@ -3,44 +3,34 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { ExpenseService } from "@/features/expenses/expense-service";
-import { useExpenseStore } from "@/features/expenses/expense-store";
-import type { Expense } from "@/features/expenses/expense.types";
+import { MaterialService } from "@/features/materials/material-service";
+import { useMaterialStore } from "@/features/materials/material-store";
+import type { Material } from "@/features/materials/material.types";
 import { PriceInput } from "@/shared/components/price-input";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 
-const priceStringSchema = z
-  .string()
-  .trim()
-  .min(1, "Valor obrigatório")
-  .refine((value) => {
-    const cents = parsePriceToCents(value);
-    return cents !== null && cents > 0;
-  }, "Valor inválido");
-
-const formSchema = z.object({
-  title: z.string().trim().min(1, "Título obrigatório"),
-  notes: z.string().optional(),
-  amount: priceStringSchema,
+const materialFormSchema = z.object({
+  name: z.string().trim().min(1, "Nome obrigatório"),
+  price: z.string().optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type MaterialFormValues = z.infer<typeof materialFormSchema>;
 
 function parsePriceToCents(value: string): number | null {
   const cleaned = value.replace(/\s/g, "").replace(/[^0-9.,]/g, "");
@@ -68,23 +58,23 @@ function formatCentsToPriceString(cents: number): string {
   }).format(value);
 }
 
-export default function ExpensesForm() {
+export default function MaterialsForm() {
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const isEditing = !!id;
   const router = useRouter();
   const theme = useTheme();
   const styles = useStyles(createStyles);
 
-  const { createExpense, updateExpense } = useExpenseStore();
+  const { createMaterial, updateMaterial } = useMaterialStore();
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [expense, setExpense] = useState<Expense | null>(null);
+  const [isLoadingMaterial, setIsLoadingMaterial] = useState(false);
+  const [material, setMaterial] = useState<Material | null>(null);
 
-  const title = isEditing ? "Editar despesa" : "Nova despesa";
+  const isEditing = !!id;
+  const title = isEditing ? "Editar material" : "Novo material";
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { title: "", notes: "", amount: "" },
+  const form = useForm<MaterialFormValues>({
+    resolver: zodResolver(materialFormSchema),
+    defaultValues: { name: "", price: "" },
     mode: "onSubmit",
   });
 
@@ -104,27 +94,27 @@ export default function ExpensesForm() {
     }
 
     let isMounted = true;
-    setIsLoading(true);
+    setIsLoadingMaterial(true);
 
-    ExpenseService.getExpenseById(parsedId)
+    MaterialService.getMaterialById(parsedId)
       .then((loaded) => {
         if (!isMounted) return;
-        setExpense(loaded);
+        setMaterial(loaded);
         form.reset({
-          title: loaded.title,
-          notes: loaded.notes ?? "",
-          amount: formatCentsToPriceString(loaded.amount_in_cents),
+          name: loaded.name,
+          price:
+            loaded.price_in_cents !== null ? formatCentsToPriceString(loaded.price_in_cents) : "",
         });
       })
       .catch((error: unknown) => {
         if (!isMounted) return;
-        const message = error instanceof Error ? error.message : "Falha ao carregar despesa";
+        const message = error instanceof Error ? error.message : "Falha ao carregar material";
         Alert.alert("Erro", message);
         router.back();
       })
       .finally(() => {
         if (!isMounted) return;
-        setIsLoading(false);
+        setIsLoadingMaterial(false);
       });
 
     return () => {
@@ -134,22 +124,15 @@ export default function ExpensesForm() {
 
   const isSubmitting = form.formState.isSubmitting;
 
-  async function onSubmit(values: FormValues) {
+  async function onSubmit(values: MaterialFormValues) {
     try {
-      const amountInCents = parsePriceToCents(values.amount);
-      if (amountInCents === null || amountInCents <= 0) {
-        form.setError("amount", { message: "Valor inválido" });
-        return;
-      }
-
-      const titleTrimmed = values.title.trim();
-      const notesTrimmed = values.notes?.trim() ?? "";
+      const priceInCents = parsePriceToCents(values.price ?? "");
+      const name = values.name.trim();
 
       if (!isEditing) {
-        await createExpense({
-          title: titleTrimmed,
-          notes: notesTrimmed ? notesTrimmed : undefined,
-          amount_in_cents: amountInCents,
+        await createMaterial({
+          name,
+          price_in_cents: priceInCents,
         });
 
         router.back();
@@ -161,15 +144,14 @@ export default function ExpensesForm() {
         return;
       }
 
-      await updateExpense(parsedId, {
-        title: titleTrimmed,
-        notes: notesTrimmed ? notesTrimmed : null,
-        amount_in_cents: amountInCents,
+      await updateMaterial(parsedId, {
+        name,
+        price_in_cents: priceInCents,
       });
 
       router.back();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Falha ao salvar despesa";
+      const message = error instanceof Error ? error.message : "Falha ao salvar material";
       Alert.alert("Erro", message);
     }
   }
@@ -206,28 +188,28 @@ export default function ExpensesForm() {
             contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
           >
-            {isLoading ? (
+            {isLoadingMaterial ? (
               <View style={styles.loadingWrap}>
                 <ActivityIndicator color={theme.colors.tint} />
-                <Text style={styles.loadingText}>Carregando despesa...</Text>
+                <Text style={styles.loadingText}>Carregando material...</Text>
               </View>
             ) : (
               <>
                 <View style={styles.section}>
-                  <Text style={styles.label}>Título</Text>
+                  <Text style={styles.label}>Nome</Text>
                   <Controller
                     control={form.control}
-                    name="title"
+                    name="name"
                     render={({ field: { onChange, onBlur, value }, fieldState }) => (
                       <>
                         <TextInput
                           value={value}
                           onChangeText={onChange}
                           onBlur={onBlur}
-                          placeholder="Ex: Compra de material"
+                          placeholder="Ex: Madeira tratada"
                           placeholderTextColor={theme.colors.textMuted}
                           style={[styles.input, fieldState.error && styles.inputError]}
-                          autoCapitalize="sentences"
+                          autoCapitalize="words"
                           returnKeyType="next"
                         />
                         {fieldState.error?.message ? (
@@ -239,17 +221,17 @@ export default function ExpensesForm() {
                 </View>
 
                 <View style={styles.section}>
-                  <Text style={styles.label}>Valor</Text>
+                  <Text style={styles.label}>Preço</Text>
                   <Controller
                     control={form.control}
-                    name="amount"
+                    name="price"
                     render={({ field: { onChange, onBlur, value }, fieldState }) => (
                       <>
                         <PriceInput
-                          value={value}
+                          value={value ?? ""}
                           onChangeText={onChange}
                           onBlur={onBlur}
-                          placeholder="R$ 0,00"
+                          placeholder="Opcional"
                           style={[styles.input, fieldState.error && styles.inputError]}
                         />
                         {fieldState.error?.message ? (
@@ -258,40 +240,13 @@ export default function ExpensesForm() {
                       </>
                     )}
                   />
-                  {expense ? (
+                  {material && material.price_in_cents !== null ? (
                     <Text style={styles.helperText}>
-                      Atual: {formatCentsToPriceString(expense.amount_in_cents)}
+                      Atual: {formatCentsToPriceString(material.price_in_cents)}
                     </Text>
-                  ) : null}
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.label}>Notas</Text>
-                  <Controller
-                    control={form.control}
-                    name="notes"
-                    render={({ field: { onChange, onBlur, value }, fieldState }) => (
-                      <>
-                        <TextInput
-                          value={value ?? ""}
-                          onChangeText={onChange}
-                          onBlur={onBlur}
-                          placeholder="Opcional"
-                          placeholderTextColor={theme.colors.textMuted}
-                          style={[
-                            styles.input,
-                            styles.textArea,
-                            fieldState.error && styles.inputError,
-                          ]}
-                          multiline
-                          textAlignVertical="top"
-                        />
-                        {fieldState.error?.message ? (
-                          <Text style={styles.errorText}>{fieldState.error.message}</Text>
-                        ) : null}
-                      </>
-                    )}
-                  />
+                  ) : (
+                    <Text style={styles.helperText}>Preço opcional para este material</Text>
+                  )}
                 </View>
 
                 <Pressable
@@ -358,18 +313,15 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       paddingHorizontal: 14,
       paddingVertical: 12,
       borderRadius: 14,
-      color: colors.text,
       fontSize: 16,
+      color: colors.text,
       fontFamily: fonts.sans,
-    },
-    textArea: {
-      minHeight: 96,
     },
     inputError: {
       borderColor: colors.error,
     },
     errorText: {
-      fontSize: 13,
+      fontSize: 12,
       color: colors.error,
       fontFamily: fonts.sans,
     },
@@ -378,15 +330,27 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       color: colors.textMuted,
       fontFamily: fonts.sans,
     },
+    loadingWrap: {
+      flex: 1,
+      minHeight: 260,
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 12,
+    },
+    loadingText: {
+      fontSize: 14,
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
+    },
     submitButton: {
-      marginTop: 10,
+      marginTop: 8,
       borderRadius: 16,
       paddingVertical: 14,
       alignItems: "center",
       backgroundColor: colors.tint,
     },
     submitButtonPressed: {
-      opacity: 0.85,
+      opacity: 0.88,
     },
     submitButtonText: {
       color: colors.background,
@@ -394,14 +358,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontWeight: "600",
       fontFamily: fonts.rounded,
     },
-    loadingWrap: {
-      paddingVertical: 40,
-      gap: 12,
-      alignItems: "center",
-    },
-    loadingText: {
-      color: colors.textMuted,
-      fontFamily: fonts.sans,
-    },
   });
-

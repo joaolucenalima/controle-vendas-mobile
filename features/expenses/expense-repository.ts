@@ -38,12 +38,12 @@ export const ExpenseRepository = {
     return result?.total ?? 0;
   },
 
-  async create({ title, amount_in_cents, category, notes }: CreateExpenseDTO): Promise<Expense> {
+  async create({ title, amount_in_cents, notes }: CreateExpenseDTO): Promise<Expense> {
     const createdAt = new Date().toISOString();
 
     const result = await db.runAsync(
-      "INSERT INTO expenses (title, amount_in_cents, category, notes, created_at) VALUES (?, ?, ?, ?, ?)",
-      [title, amount_in_cents, category ?? null, notes ?? null, createdAt],
+      "INSERT INTO expenses (title, amount_in_cents, notes, created_at) VALUES (?, ?, ?, ?, ?)",
+      [title, amount_in_cents, notes ?? null, createdAt],
     );
 
     const expense = await this.findById(result.lastInsertRowId);
@@ -66,11 +66,6 @@ export const ExpenseRepository = {
     if (data.amount_in_cents !== undefined) {
       updates.push("amount_in_cents = ?");
       params.push(data.amount_in_cents);
-    }
-
-    if (data.category !== undefined) {
-      updates.push("category = ?");
-      params.push(data.category ?? null);
     }
 
     if (data.notes !== undefined) {
