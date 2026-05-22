@@ -1,7 +1,8 @@
 import { ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
 import { initializeDatabase } from "@/database/migrations/init";
@@ -12,14 +13,38 @@ export const unstable_settings = {
   anchor: "(tabs)",
 };
 
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
 export default function RootLayout() {
   const { navigationTheme } = useTheme();
 
+  const [isDatabaseReady, setIsDatabaseReady] = useState(false);
+
   useEffect(() => {
-    configureDatabase().then(() => {
-      initializeDatabase();
+    let isMounted = true;
+
+    async function bootstrapApp() {
+      await configureDatabase();
+      await initializeDatabase();
+
+      if (isMounted) {
+        setIsDatabaseReady(true);
+        await SplashScreen.hideAsync();
+      }
+    }
+
+    bootstrapApp().catch((error) => {
+      console.error("Failed to initialize database", error);
     });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  if (!isDatabaseReady) {
+    return null;
+  }
 
   return (
     <ThemeProvider value={navigationTheme}>
