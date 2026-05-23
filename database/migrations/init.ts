@@ -1,6 +1,7 @@
 import { db } from "../sqlite";
 import { create_initial_tables } from "./001_create_initial_tables";
 import { add_materials_table } from "./002_add_materials_table";
+import { add_product_image } from "./003_add_product_image";
 
 export type Migration = {
   id: number;
@@ -8,9 +9,11 @@ export type Migration = {
   up: () => Promise<void>;
 };
 
-const migrations: Migration[] = [create_initial_tables, add_materials_table].sort(
-  (a, b) => a.id - b.id,
-);
+const migrations: Migration[] = [
+  create_initial_tables,
+  add_materials_table,
+  add_product_image,
+].sort((a, b) => a.id - b.id);
 
 async function recordMigration(migration: Migration) {
   await db.runAsync("INSERT INTO schema_migrations (id, name, applied_at) VALUES (?, ?, ?)", [

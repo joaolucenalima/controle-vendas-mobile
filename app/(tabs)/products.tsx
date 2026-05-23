@@ -1,6 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useProductStore } from "@/features/products/product-store";
@@ -25,10 +26,6 @@ export default function ProductsScreen() {
 
   const hasProducts = products.length > 0;
 
-  const sortedProducts = useMemo(() => {
-    return [...products].sort((a, b) => a.name.localeCompare(b.name));
-  }, [products]);
-
   function handleCreate() {
     router.push("/products-form");
   }
@@ -43,11 +40,17 @@ export default function ProductsScreen() {
       accessibilityRole="button"
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardPrice}>{formatCentsToCurrency(item.price_in_cents)}</Text>
-      </View>
-      {item.description ? <Text style={styles.cardDescription}>{item.description}</Text> : null}
+      {item.image_url ? (
+        <Image source={{ uri: item.image_url }} style={styles.cardImage} contentFit="cover" />
+      ) : (
+        <View style={styles.cardImagePlaceholder}>
+          <Text style={styles.cardImagePlaceholderText}>Sem imagem</Text>
+        </View>
+      )}
+
+      <Text style={styles.cardTitle}>{item.name}</Text>
+
+      <Text style={styles.cardPrice}>{formatCentsToCurrency(item.price_in_cents)}</Text>
     </Pressable>
   );
 
@@ -61,11 +64,12 @@ export default function ProductsScreen() {
 
         {hasProducts ? (
           <FlatList
-            data={sortedProducts}
+            data={products}
             keyExtractor={(item) => String(item.id)}
             renderItem={renderItem}
-            contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            columnWrapperStyle={{ gap: 20, marginBottom: 16 }}
+            numColumns={2}
           />
         ) : (
           <View style={styles.emptyState}>
@@ -120,20 +124,42 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       color: colors.textMuted,
       fontFamily: fonts.sans,
     },
-    listContent: {
-      gap: 12,
-      paddingBottom: 120,
-    },
     card: {
+      flex: 1,
       borderRadius: 18,
       borderWidth: 1,
-      padding: 16,
+      padding: 12,
       backgroundColor: colors.surfaceElevated,
       borderColor: colors.border,
-      gap: 8,
+      gap: 4,
     },
     cardPressed: {
       opacity: 0.82,
+    },
+    cardImage: {
+      width: "100%",
+      aspectRatio: 1,
+      alignSelf: "center",
+      borderRadius: 12,
+      backgroundColor: colors.surface,
+    },
+    cardImagePlaceholder: {
+      width: "100%",
+      aspectRatio: 1,
+      alignSelf: "center",
+      borderRadius: 12,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 6,
+    },
+    cardImagePlaceholderText: {
+      color: colors.textMuted,
+      fontSize: 12,
+      fontFamily: fonts.sans,
+      textAlign: "center",
     },
     cardHeader: {
       flexDirection: "row",
@@ -142,22 +168,17 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       gap: 12,
     },
     cardTitle: {
-      flex: 1,
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: 600,
       color: colors.text,
       fontFamily: fonts.rounded,
+      marginTop: 8,
     },
     cardPrice: {
       fontSize: 14,
       color: colors.tint,
       fontFamily: fonts.rounded,
-      fontWeight: 500,
-    },
-    cardDescription: {
-      fontSize: 14,
-      color: colors.textMuted,
-      fontFamily: fonts.sans,
+      alignSelf: "flex-end",
     },
     emptyState: {
       flex: 1,
@@ -198,7 +219,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     fab: {
       position: "absolute",
       right: 20,
-      bottom: 30,
+      bottom: 0,
       width: 54,
       height: 54,
       borderRadius: 27,

@@ -30,6 +30,7 @@ const MAPPING = {
   magnifyingglass: "search",
   "chevron.left": "chevron-left",
   "chevron.down": "expand-more",
+  "camera.fill": "camera-alt",
 } as IconMapping;
 
 /**

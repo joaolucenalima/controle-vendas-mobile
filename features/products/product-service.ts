@@ -26,12 +26,14 @@ const createProductSchema = z.object({
   name: z.string().trim().min(1, "Nome obrigatório"),
   description: z.string().optional(),
   price_in_cents: z.int("Preço inválido").positive("Preço inválido"),
+  image_url: z.string().trim().nullable().optional(),
 });
 
 const updateProductSchema = z.object({
   name: z.string().trim().min(1, "Nome obrigatório").optional(),
   description: z.string().nullable().optional(),
   price_in_cents: z.int("Preço inválido").positive("Preço inválido").optional(),
+  image_url: z.string().trim().nullable().optional(),
 });
 
 export const ProductService = {
@@ -60,7 +62,12 @@ export const ProductService = {
         return undefined;
       },
     });
-    return await ProductRepository.create(parsedData);
+    const productData: CreateProductDTO = {
+      ...parsedData,
+      image_url: parsedData.image_url ?? undefined,
+    };
+
+    return await ProductRepository.create(productData);
   },
 
   async updateProduct(id: number, data: UpdateProductDTO) {

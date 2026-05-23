@@ -1,20 +1,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
 import { ProductService } from "@/features/products/product-service";
@@ -24,6 +22,7 @@ import { PriceInput } from "@/shared/components/price-input";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
+import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
 
 const priceStringSchema = z
   .string()
@@ -78,6 +77,7 @@ export default function ProductsForm() {
 
   const [isLoadingProduct, setIsLoadingProduct] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const isEditing = !!id;
   const title = isEditing ? "Editar produto" : "Novo produto";
@@ -134,6 +134,28 @@ export default function ProductsForm() {
 
   const isSubmitting = form.formState.isSubmitting;
 
+  async function handlePickImage() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert("Permissão necessária", "Permita acesso às fotos para selecionar uma imagem.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (result.canceled || !result.assets[0]) {
+      return;
+    }
+
+    setImageUrl(result.assets[0].uri);
+  }
+
   async function onSubmit(values: ProductFormValues) {
     try {
       const priceInCents = parsePriceToCents(values.price);
@@ -150,6 +172,7 @@ export default function ProductsForm() {
           name,
           description: descriptionTrimmed ? descriptionTrimmed : undefined,
           price_in_cents: priceInCents,
+          image_url: imageUrl?.trim() ?? null,
         });
 
         router.back();
@@ -165,6 +188,7 @@ export default function ProductsForm() {
         name,
         description: descriptionTrimmed ? descriptionTrimmed : null,
         price_in_cents: priceInCents,
+        image_url: imageUrl?.trim() ?? null,
       });
 
       router.back();
@@ -177,172 +201,159 @@ export default function ProductsForm() {
   const submitLabel = isEditing ? "Salvar" : "Criar";
 
   return (
-    <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          title,
-          headerShown: true,
-          headerLeft: () => (
-            <Pressable
-              onPress={() => router.back()}
-              accessibilityRole="button"
-              accessibilityLabel="Voltar"
-              hitSlop={12}
-              style={({ pressed }) => [styles.headerButton, pressed && styles.headerButtonPressed]}
-            >
-              <IconSymbol name="chevron.left" size={22} color={theme.colors.text} />
-            </Pressable>
-          ),
-        }}
-      />
-
-      <SafeAreaView style={styles.safeArea} edges={["bottom"]}>
-        <KeyboardAvoidingView
-          style={styles.keyboard}
-          behavior={Platform.select({ ios: "padding", android: undefined })}
-        >
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.content}
-            showsVerticalScrollIndicator={false}
-          >
-            {isLoadingProduct ? (
-              <View style={styles.loadingWrap}>
-                <ActivityIndicator color={theme.colors.tint} />
-                <Text style={styles.loadingText}>Carregando produto...</Text>
-              </View>
-            ) : (
-              <>
-                <View style={styles.section}>
-                  <Text style={styles.label}>Nome</Text>
-                  <Controller
-                    control={form.control}
-                    name="name"
-                    render={({ field: { onChange, onBlur, value }, fieldState }) => (
-                      <>
-                        <TextInput
-                          value={value}
-                          onChangeText={onChange}
-                          onBlur={onBlur}
-                          placeholder="Ex: Café especial"
-                          placeholderTextColor={theme.colors.textMuted}
-                          style={[styles.input, fieldState.error && styles.inputError]}
-                          autoCapitalize="words"
-                          returnKeyType="next"
-                        />
-                        {fieldState.error?.message ? (
-                          <Text style={styles.errorText}>{fieldState.error.message}</Text>
-                        ) : null}
-                      </>
-                    )}
+    <StackFormWrapper title={title}>
+      {isLoadingProduct ? (
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator color={theme.colors.tint} />
+          <Text style={styles.loadingText}>Carregando produto...</Text>
+        </View>
+      ) : (
+        <>
+          <View style={styles.section}>
+            <Text style={styles.label}>Nome</Text>
+            <Controller
+              control={form.control}
+              name="name"
+              render={({ field: { onChange, onBlur, value }, fieldState }) => (
+                <>
+                  <TextInput
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    placeholder="Ex: Café especial"
+                    placeholderTextColor={theme.colors.textMuted}
+                    style={[styles.input, fieldState.error && styles.inputError]}
+                    autoCapitalize="words"
+                    returnKeyType="next"
                   />
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.label}>Preço</Text>
-                  <Controller
-                    control={form.control}
-                    name="price"
-                    render={({ field: { onChange, onBlur, value }, fieldState }) => (
-                      <>
-                        <PriceInput
-                          value={value}
-                          onChangeText={onChange}
-                          onBlur={onBlur}
-                          placeholder="R$ 0,00"
-                          style={[styles.input, fieldState.error && styles.inputError]}
-                        />
-                        {fieldState.error?.message ? (
-                          <Text style={styles.errorText}>{fieldState.error.message}</Text>
-                        ) : null}
-                      </>
-                    )}
-                  />
-                  {product ? (
-                    <Text style={styles.helperText}>
-                      Atual: {formatCentsToPriceString(product.price_in_cents)}
-                    </Text>
+                  {fieldState.error?.message ? (
+                    <Text style={styles.errorText}>{fieldState.error.message}</Text>
                   ) : null}
-                </View>
+                </>
+              )}
+            />
+          </View>
 
-                <View style={styles.section}>
-                  <Text style={styles.label}>Descrição</Text>
-                  <Controller
-                    control={form.control}
-                    name="description"
-                    render={({ field: { onChange, onBlur, value }, fieldState }) => (
-                      <>
-                        <TextInput
-                          value={value ?? ""}
-                          onChangeText={onChange}
-                          onBlur={onBlur}
-                          placeholder="Opcional"
-                          placeholderTextColor={theme.colors.textMuted}
-                          style={[
-                            styles.input,
-                            styles.textArea,
-                            fieldState.error && styles.inputError,
-                          ]}
-                          multiline
-                          textAlignVertical="top"
-                        />
-                        {fieldState.error?.message ? (
-                          <Text style={styles.errorText}>{fieldState.error.message}</Text>
-                        ) : null}
-                      </>
-                    )}
+          <View style={styles.section}>
+            <Text style={styles.label}>Preço</Text>
+            <Controller
+              control={form.control}
+              name="price"
+              render={({ field: { onChange, onBlur, value }, fieldState }) => (
+                <>
+                  <PriceInput
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    placeholder="R$ 0,00"
+                    style={[styles.input, fieldState.error && styles.inputError]}
                   />
-                </View>
+                  {fieldState.error?.message ? (
+                    <Text style={styles.errorText}>{fieldState.error.message}</Text>
+                  ) : null}
+                </>
+              )}
+            />
+            {product ? (
+              <Text style={styles.helperText}>
+                Atual: {formatCentsToPriceString(product.price_in_cents)}
+              </Text>
+            ) : null}
+          </View>
 
-                <Pressable
-                  onPress={form.handleSubmit(onSubmit)}
-                  disabled={isSubmitting}
-                  accessibilityRole="button"
-                  style={({ pressed }) => [
-                    styles.submitButton,
-                    (pressed || isSubmitting) && styles.submitButtonPressed,
-                  ]}
-                >
-                  {isSubmitting ? (
-                    <ActivityIndicator color={theme.colors.background} />
-                  ) : (
-                    <Text style={styles.submitButtonText}>{submitLabel}</Text>
-                  )}
-                </Pressable>
+          <View style={styles.section}>
+            <Text style={styles.label}>Imagem do produto</Text>
+
+            {imageUrl ? (
+              <>
+                <Image source={{ uri: imageUrl }} style={styles.imagePreview} contentFit="cover" />
+
+                <View style={styles.imageActions}>
+                  <Pressable
+                    onPress={handlePickImage}
+                    accessibilityRole="button"
+                    style={({ pressed }) => [
+                      styles.imageButton,
+                      pressed && styles.imageButtonPressed,
+                    ]}
+                  >
+                    <Text style={styles.imageButtonText}>Selecionar outra imagem</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => setImageUrl(null)}
+                    accessibilityRole="button"
+                    disabled={!imageUrl}
+                    style={({ pressed }) => [
+                      styles.imageButtonSecondary,
+                      (!imageUrl || pressed) && styles.imageButtonSecondaryPressed,
+                    ]}
+                  >
+                    <Text style={styles.imageButtonSecondaryText}>Remover</Text>
+                  </Pressable>
+                </View>
               </>
+            ) : (
+              <Pressable
+                onPress={handlePickImage}
+                accessibilityRole="button"
+                style={styles.imagePlaceholderButton}
+              >
+                <IconSymbol name="camera.fill" size={36} color={theme.colors.textMuted} />
+                <Text style={styles.imagePlaceholderText}>Nenhuma imagem selecionada</Text>
+                <Text style={styles.addImageText}>Clique para adicionar uma imagem</Text>
+              </Pressable>
             )}
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.label}>Descrição</Text>
+            <Controller
+              control={form.control}
+              name="description"
+              render={({ field: { onChange, onBlur, value }, fieldState }) => (
+                <>
+                  <TextInput
+                    value={value ?? ""}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    placeholder="Opcional"
+                    placeholderTextColor={theme.colors.textMuted}
+                    style={[styles.input, styles.textArea, fieldState.error && styles.inputError]}
+                    multiline
+                    textAlignVertical="top"
+                  />
+                  {fieldState.error?.message ? (
+                    <Text style={styles.errorText}>{fieldState.error.message}</Text>
+                  ) : null}
+                </>
+              )}
+            />
+          </View>
+
+          <Pressable
+            onPress={form.handleSubmit(onSubmit)}
+            disabled={isSubmitting}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.submitButton,
+              (pressed || isSubmitting) && styles.submitButtonPressed,
+            ]}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color={theme.colors.background} />
+            ) : (
+              <Text style={styles.submitButtonText}>{submitLabel}</Text>
+            )}
+          </Pressable>
+        </>
+      )}
+    </StackFormWrapper>
   );
 }
 
 const createStyles = ({ colors, fonts }: StylesProps) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    safeArea: {
-      flex: 1,
-    },
-    keyboard: {
-      flex: 1,
-    },
-    content: {
-      paddingHorizontal: 20,
-      paddingTop: 16,
-      paddingBottom: 28,
-      gap: 16,
-    },
-    headerButton: {
-      borderRadius: 999,
-      padding: 8,
-    },
-    headerButtonPressed: {
-      opacity: 0.7,
-    },
     section: {
       gap: 8,
     },
@@ -377,6 +388,79 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontSize: 12,
       color: colors.textMuted,
       fontFamily: fonts.sans,
+    },
+    imagePreview: {
+      height: 240,
+      aspectRatio: 1,
+      alignSelf: "center",
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+    },
+    imagePlaceholderButton: {
+      width: "100%",
+      paddingVertical: 20,
+      borderRadius: 18,
+      backgroundColor: colors.surface,
+      borderWidth: 2,
+      borderStyle: "dashed",
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+    },
+    imagePlaceholderText: {
+      color: colors.textMuted,
+      fontSize: 14,
+      fontFamily: fonts.sans,
+    },
+    addImageText: {
+      color: colors.tint,
+      fontSize: 14,
+      fontWeight: 500,
+      marginTop: 4,
+    },
+    imageActions: {
+      flexDirection: "row",
+      gap: 10,
+    },
+    imageButton: {
+      flex: 1,
+      borderRadius: 14,
+      paddingVertical: 12,
+      alignItems: "center",
+      backgroundColor: colors.tint,
+    },
+    imageButtonPressed: {
+      opacity: 0.85,
+    },
+    imageButtonText: {
+      color: colors.background,
+      fontSize: 14,
+      fontFamily: fonts.rounded,
+      fontWeight: "600",
+    },
+    imageButtonSecondary: {
+      paddingHorizontal: 16,
+      borderRadius: 14,
+      paddingVertical: 12,
+      alignItems: "center",
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    imageButtonSecondaryPressed: {
+      opacity: 0.85,
+    },
+    imageButtonSecondaryText: {
+      color: colors.text,
+      fontSize: 14,
+      fontFamily: fonts.rounded,
+      fontWeight: "600",
+    },
+    imageUrlInput: {
+      marginTop: 2,
     },
     submitButton: {
       marginTop: 10,

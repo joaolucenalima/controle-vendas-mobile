@@ -60,7 +60,7 @@ const createStyles = ({ colors }: StylesProps) =>
       width: 260,
       height: 260,
       borderRadius: 130,
-      borderWidth: 1,
+      borderWidth: 2,
       top: 160,
       left: 30,
       opacity: 0.25,

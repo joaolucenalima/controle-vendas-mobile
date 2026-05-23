@@ -11,12 +11,17 @@ export const ProductRepository = {
     return product ?? null;
   },
 
-  async create({ name, description, price_in_cents }: CreateProductDTO): Promise<Product> {
+  async create({
+    name,
+    description,
+    price_in_cents,
+    image_url,
+  }: CreateProductDTO): Promise<Product> {
     const createdAt = new Date().toISOString();
 
     const result = await db.runAsync(
-      "INSERT INTO products (name, description, price_in_cents, created_at) VALUES (?, ?, ?, ?)",
-      [name, description ?? null, price_in_cents, createdAt],
+      "INSERT INTO products (name, description, price_in_cents, image_url, created_at) VALUES (?, ?, ?, ?, ?)",
+      [name, description ?? null, price_in_cents, image_url ?? null, createdAt],
     );
 
     const product = await this.findById(result.lastInsertRowId);
@@ -44,6 +49,11 @@ export const ProductRepository = {
     if (data.price_in_cents !== undefined) {
       updates.push("price_in_cents = ?");
       params.push(data.price_in_cents);
+    }
+
+    if (data.image_url !== undefined) {
+      updates.push("image_url = ?");
+      params.push(data.image_url);
     }
 
     if (updates.length === 0) {
