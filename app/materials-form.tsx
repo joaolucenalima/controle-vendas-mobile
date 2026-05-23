@@ -10,7 +10,6 @@ import {
     Pressable,
     ScrollView,
     StyleSheet,
-    Text,
     TextInput,
     View,
 } from "react-native";
@@ -21,6 +20,7 @@ import { MaterialService } from "@/features/materials/material-service";
 import { useMaterialStore } from "@/features/materials/material-store";
 import type { Material } from "@/features/materials/material.types";
 import { PriceInput } from "@/shared/components/price-input";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -191,12 +191,12 @@ export default function MaterialsForm() {
             {isLoadingMaterial ? (
               <View style={styles.loadingWrap}>
                 <ActivityIndicator color={theme.colors.tint} />
-                <Text style={styles.loadingText}>Carregando material...</Text>
+                <ThemedText style={styles.loadingText}>Carregando material...</ThemedText>
               </View>
             ) : (
               <>
                 <View style={styles.section}>
-                  <Text style={styles.label}>Nome</Text>
+                  <ThemedText style={styles.label}>Nome</ThemedText>
                   <Controller
                     control={form.control}
                     name="name"
@@ -213,7 +213,9 @@ export default function MaterialsForm() {
                           returnKeyType="next"
                         />
                         {fieldState.error?.message ? (
-                          <Text style={styles.errorText}>{fieldState.error.message}</Text>
+                          <ThemedText style={styles.errorText}>
+                            {fieldState.error.message}
+                          </ThemedText>
                         ) : null}
                       </>
                     )}
@@ -221,7 +223,7 @@ export default function MaterialsForm() {
                 </View>
 
                 <View style={styles.section}>
-                  <Text style={styles.label}>Preço</Text>
+                  <ThemedText style={styles.label}>Preço</ThemedText>
                   <Controller
                     control={form.control}
                     name="price"
@@ -235,17 +237,21 @@ export default function MaterialsForm() {
                           style={[styles.input, fieldState.error && styles.inputError]}
                         />
                         {fieldState.error?.message ? (
-                          <Text style={styles.errorText}>{fieldState.error.message}</Text>
+                          <ThemedText style={styles.errorText}>
+                            {fieldState.error.message}
+                          </ThemedText>
                         ) : null}
                       </>
                     )}
                   />
                   {material && material.price_in_cents !== null ? (
-                    <Text style={styles.helperText}>
+                    <ThemedText style={styles.helperText}>
                       Atual: {formatCentsToPriceString(material.price_in_cents)}
-                    </Text>
+                    </ThemedText>
                   ) : (
-                    <Text style={styles.helperText}>Preço opcional para este material</Text>
+                    <ThemedText style={styles.helperText}>
+                      Preço opcional para este material
+                    </ThemedText>
                   )}
                 </View>
 
@@ -261,7 +267,7 @@ export default function MaterialsForm() {
                   {isSubmitting ? (
                     <ActivityIndicator color={theme.colors.background} />
                   ) : (
-                    <Text style={styles.submitButtonText}>{submitLabel}</Text>
+                    <ThemedText style={styles.submitButtonText}>{submitLabel}</ThemedText>
                   )}
                 </Pressable>
               </>
@@ -359,3 +365,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.rounded,
     },
   });
+

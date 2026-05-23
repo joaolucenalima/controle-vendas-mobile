@@ -1,7 +1,8 @@
 import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useMemo, useState } from "react";
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Platform, Pressable, StyleSheet, View } from "react-native";
 
+import ThemedText from "@/shared/components/themed-text";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import {
@@ -62,7 +63,7 @@ export function DatePickerField({
 
   return (
     <View style={styles.field}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <ThemedText style={styles.label}>{label}</ThemedText>}
 
       <Pressable
         onPress={openPicker}
@@ -70,9 +71,9 @@ export function DatePickerField({
         accessibilityLabel={`${label}, ${displayValue || placeholder}`}
         style={({ pressed }) => [styles.trigger, pressed && styles.triggerPressed]}
       >
-        <Text style={[styles.triggerText, !hasValue && styles.placeholder]}>
+        <ThemedText style={[styles.triggerText, !hasValue && styles.placeholder]}>
           {hasValue ? displayValue : placeholder}
-        </Text>
+        </ThemedText>
       </Pressable>
 
       {Platform.OS === "android" && visible ? (
@@ -93,13 +94,13 @@ export function DatePickerField({
           <View style={styles.sheet}>
             <View style={styles.sheetHeader}>
               <Pressable onPress={closePicker} hitSlop={8}>
-                <Text style={styles.sheetActionMuted}>Cancelar</Text>
+                <ThemedText style={styles.sheetActionMuted}>Cancelar</ThemedText>
               </Pressable>
 
-              <Text style={styles.sheetTitle}>{label}</Text>
+              <ThemedText style={styles.sheetTitle}>{label}</ThemedText>
 
               <Pressable onPress={handleIosConfirm} hitSlop={8}>
-                <Text style={styles.sheetAction}>Confirmar</Text>
+                <ThemedText style={styles.sheetAction}>Confirmar</ThemedText>
               </Pressable>
             </View>
 

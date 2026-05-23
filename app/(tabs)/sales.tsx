@@ -1,12 +1,13 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Pressable, StyleSheet, View } from "react-native";
 
 import { useProductStore } from "@/features/products/product-store";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
 import { DatePickerField } from "@/shared/components/date-picker-field";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -95,12 +96,12 @@ export default function SalesScreen() {
   const header = (
     <View style={styles.headerWrap}>
       <View style={styles.header}>
-        <Text style={styles.title}>Vendas</Text>
-        <Text style={styles.subtitle}>Acompanhe e filtre por período</Text>
+        <ThemedText style={styles.title}>Vendas</ThemedText>
+        <ThemedText style={styles.subtitle}>Acompanhe e filtre por período</ThemedText>
       </View>
 
       <View style={styles.filterCard}>
-        <Text style={styles.filterTitle}>Período</Text>
+        <ThemedText style={styles.filterTitle}>Período</ThemedText>
 
         <View style={styles.filterInputs}>
           <DatePickerField
@@ -126,7 +127,7 @@ export default function SalesScreen() {
             accessibilityRole="button"
             style={({ pressed }) => [styles.filterButton, pressed && styles.filterButtonPressed]}
           >
-            <Text style={styles.filterButtonText}>Filtrar</Text>
+            <ThemedText style={styles.filterButtonText}>Filtrar</ThemedText>
           </Pressable>
 
           <Pressable
@@ -134,14 +135,14 @@ export default function SalesScreen() {
             accessibilityRole="button"
             style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
           >
-            <Text style={styles.clearButtonText}>Limpar</Text>
+            <ThemedText style={styles.clearButtonText}>Limpar</ThemedText>
           </Pressable>
         </View>
       </View>
 
       <View style={styles.summaryRow}>
-        <Text style={styles.summaryLabel}>Resultados</Text>
-        <Text style={styles.summaryValue}>{totalFiltered}</Text>
+        <ThemedText style={styles.summaryLabel}>Resultados</ThemedText>
+        <ThemedText style={styles.summaryValue}>{totalFiltered}</ThemedText>
       </View>
     </View>
   );
@@ -155,10 +156,10 @@ export default function SalesScreen() {
         ListHeaderComponent={header}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>Nenhuma venda encontrada</Text>
-            <Text style={styles.emptySubtitle}>
+            <ThemedText style={styles.emptyTitle}>Nenhuma venda encontrada</ThemedText>
+            <ThemedText style={styles.emptySubtitle}>
               Tente outro período ou cadastre uma nova venda.
-            </Text>
+            </ThemedText>
           </View>
         }
         contentContainerStyle={styles.listContent}

@@ -1,8 +1,9 @@
 import { useMemo } from "react";
-import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Modal, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { Product } from "@/features/products/product.types";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -56,7 +57,7 @@ export function SaleProductPickerSheet({
           <View style={styles.handle} />
 
           <View style={styles.header}>
-            <Text style={styles.title}>Adicionar produtos</Text>
+            <ThemedText style={styles.title}>Adicionar produtos</ThemedText>
             <Pressable
               onPress={onClose}
               accessibilityRole="button"
@@ -89,9 +90,9 @@ export function SaleProductPickerSheet({
             style={styles.list}
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>
+              <ThemedText style={styles.emptyText}>
                 {search.trim() ? "Nenhum produto encontrado" : "Nenhum produto cadastrado"}
-              </Text>
+              </ThemedText>
             }
             renderItem={({ item }) => (
               <SaleProductSheetItem
@@ -111,7 +112,7 @@ export function SaleProductPickerSheet({
               (!canConfirm || pressed) && styles.confirmButtonDisabled,
             ]}
           >
-            <Text style={styles.confirmButtonText}>Adicionar produtos</Text>
+            <ThemedText style={styles.confirmButtonText}>Adicionar produtos</ThemedText>
           </Pressable>
         </View>
       </View>

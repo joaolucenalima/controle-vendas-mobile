@@ -1,8 +1,9 @@
 import { useMemo } from "react";
-import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Modal, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { Material } from "@/features/materials/material.types";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -52,7 +53,7 @@ export function MaterialPickerSheet({
           <View style={styles.handle} />
 
           <View style={styles.header}>
-            <Text style={styles.title}>Adicionar materiais</Text>
+            <ThemedText style={styles.title}>Adicionar materiais</ThemedText>
             <Pressable
               onPress={onClose}
               accessibilityRole="button"
@@ -85,9 +86,9 @@ export function MaterialPickerSheet({
             style={styles.list}
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>
+              <ThemedText style={styles.emptyText}>
                 {search.trim() ? "Nenhum material encontrado" : "Nenhum material cadastrado"}
-              </Text>
+              </ThemedText>
             }
             renderItem={({ item }) => (
               <Pressable
@@ -101,17 +102,19 @@ export function MaterialPickerSheet({
                 ]}
               >
                 <View style={[styles.checkbox, pendingSet.has(item.id) && styles.checkboxSelected]}>
-                  {pendingSet.has(item.id) ? <Text style={styles.checkboxLabel}>✓</Text> : null}
+                  {pendingSet.has(item.id) ? (
+                    <ThemedText style={styles.checkboxLabel}>✓</ThemedText>
+                  ) : null}
                 </View>
 
                 <View style={styles.materialInfo}>
-                  <Text style={styles.materialName}>{item.name}</Text>
+                  <ThemedText style={styles.materialName}>{item.name}</ThemedText>
                   {item.price_in_cents !== null ? (
-                    <Text style={styles.materialPrice}>
+                    <ThemedText style={styles.materialPrice}>
                       {formatCentsToCurrency(item.price_in_cents)}
-                    </Text>
+                    </ThemedText>
                   ) : (
-                    <Text style={styles.materialPriceMuted}>Sem preço</Text>
+                    <ThemedText style={styles.materialPriceMuted}>Sem preço</ThemedText>
                   )}
                 </View>
               </Pressable>
@@ -127,7 +130,7 @@ export function MaterialPickerSheet({
               (!canConfirm || pressed) && styles.confirmButtonDisabled,
             ]}
           >
-            <Text style={styles.confirmButtonText}>Adicionar materiais</Text>
+            <ThemedText style={styles.confirmButtonText}>Adicionar materiais</ThemedText>
           </Pressable>
         </View>
       </View>
@@ -284,3 +287,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontWeight: "600",
     },
   });
+

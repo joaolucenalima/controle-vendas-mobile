@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 
 import { SaleService } from "@/features/sales/sale-service";
 import type { Sale, SaleWithItems } from "@/features/sales/sale.types";
+import ThemedText from "@/shared/components/themed-text";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
@@ -37,12 +38,12 @@ function SaleItemRow({
   return (
     <View style={styles.itemRow}>
       <View style={styles.itemLeft}>
-        <Text style={styles.itemName}>{productName}</Text>
-        <Text style={styles.itemMeta}>
+        <ThemedText style={styles.itemName}>{productName}</ThemedText>
+        <ThemedText style={styles.itemMeta}>
           Qtd. {quantity} · {formatCentsToCurrency(unitPriceInCents)}
-        </Text>
+        </ThemedText>
       </View>
-      <Text style={styles.itemSubtotal}>{formatCentsToCurrency(subtotalInCents)}</Text>
+      <ThemedText style={styles.itemSubtotal}>{formatCentsToCurrency(subtotalInCents)}</ThemedText>
     </View>
   );
 }
@@ -80,10 +81,12 @@ export function SaleCollapsibleCard({ sale, productNamesById, onEdit }: SaleColl
           style={({ pressed }) => [styles.toggleArea, pressed && styles.cardPressed]}
         >
           <View style={styles.headerLeft}>
-            <Text style={styles.dateText}>{formatDate(sale.sold_at)}</Text>
-            <Text style={styles.totalText}>{formatCentsToCurrency(sale.total_in_cents)}</Text>
+            <ThemedText style={styles.dateText}>{formatDate(sale.sold_at)}</ThemedText>
+            <ThemedText style={styles.totalText}>
+              {formatCentsToCurrency(sale.total_in_cents)}
+            </ThemedText>
           </View>
-          <Text style={styles.chevron}>{expanded ? "▴" : "▾"}</Text>
+          <ThemedText style={styles.chevron}>{expanded ? "▴" : "▾"}</ThemedText>
         </Pressable>
 
         <Pressable
@@ -92,7 +95,7 @@ export function SaleCollapsibleCard({ sale, productNamesById, onEdit }: SaleColl
           hitSlop={8}
           style={({ pressed }) => [styles.editButton, pressed && styles.cardPressed]}
         >
-          <Text style={styles.editLabel}>Editar</Text>
+          <ThemedText style={styles.editLabel}>Editar</ThemedText>
         </Pressable>
       </View>
 
@@ -101,7 +104,7 @@ export function SaleCollapsibleCard({ sale, productNamesById, onEdit }: SaleColl
           {isLoading ? (
             <View style={styles.loadingWrap}>
               <ActivityIndicator color={theme.colors.tint} />
-              <Text style={styles.loadingText}>Carregando itens...</Text>
+              <ThemedText style={styles.loadingText}>Carregando itens...</ThemedText>
             </View>
           ) : saleDetails?.items.length ? (
             <>
@@ -116,16 +119,18 @@ export function SaleCollapsibleCard({ sale, productNamesById, onEdit }: SaleColl
               ))}
 
               <View style={styles.footer}>
-                <Text style={styles.footerLabel}>Desconto</Text>
-                <Text style={styles.footerValue}>
+                <ThemedText style={styles.footerLabel}>Desconto</ThemedText>
+                <ThemedText style={styles.footerValue}>
                   {formatCentsToCurrency(sale.discount_in_cents)}
-                </Text>
+                </ThemedText>
               </View>
 
-              {saleDetails.notes ? <Text style={styles.notes}>{saleDetails.notes}</Text> : null}
+              {saleDetails.notes ? (
+                <ThemedText style={styles.notes}>{saleDetails.notes}</ThemedText>
+              ) : null}
             </>
           ) : (
-            <Text style={styles.emptyItems}>Sem itens para exibir.</Text>
+            <ThemedText style={styles.emptyItems}>Sem itens para exibir.</ThemedText>
           )}
         </View>
       ) : null}

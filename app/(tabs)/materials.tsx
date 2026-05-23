@@ -1,10 +1,11 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
 import { useMaterialStore } from "@/features/materials/material-store";
 import type { Material } from "@/features/materials/material.types";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -42,10 +43,10 @@ export default function MaterialsScreen() {
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardPrice}>
+        <ThemedText style={styles.cardTitle}>{item.name}</ThemedText>
+        <ThemedText style={styles.cardPrice}>
           {item.price_in_cents !== null ? formatCentsToCurrency(item.price_in_cents) : "Sem preço"}
-        </Text>
+        </ThemedText>
       </View>
     </Pressable>
   );
@@ -56,8 +57,8 @@ export default function MaterialsScreen() {
     <TabsScreenLayout>
       <View style={styles.safeAreaContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Materiais</Text>
-          <Text style={styles.subtitle}>Gerencie seu estoque de insumos</Text>
+          <ThemedText style={styles.title}>Materiais</ThemedText>
+          <ThemedText style={styles.subtitle}>Gerencie seu estoque de insumos</ThemedText>
         </View>
 
         {hasMaterials ? (
@@ -70,16 +71,16 @@ export default function MaterialsScreen() {
           />
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>Nenhum material cadastrado</Text>
-            <Text style={styles.emptySubtitle}>
+            <ThemedText style={styles.emptyTitle}>Nenhum material cadastrado</ThemedText>
+            <ThemedText style={styles.emptySubtitle}>
               Cadastre seu primeiro material para organizar seus custos.
-            </Text>
+            </ThemedText>
             <Pressable
               onPress={handleCreate}
               accessibilityRole="button"
               style={({ pressed }) => [styles.emptyButton, pressed && styles.emptyButtonPressed]}
             >
-              <Text style={styles.emptyButtonText}>Adicionar material</Text>
+              <ThemedText style={styles.emptyButtonText}>Adicionar material</ThemedText>
             </Pressable>
           </View>
         )}

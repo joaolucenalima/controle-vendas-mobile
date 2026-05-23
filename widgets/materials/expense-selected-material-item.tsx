@@ -1,8 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import type { Material } from "@/features/materials/material.types";
 import { PriceInput } from "@/shared/components/price-input";
 import { QuantityInput } from "@/shared/components/quantity-input";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -50,7 +51,7 @@ export function ExpenseSelectedMaterialItem({
       </Pressable>
 
       <View style={styles.materialInfo}>
-        <Text style={styles.materialName}>{material.name}</Text>
+        <ThemedText style={styles.materialName}>{material.name}</ThemedText>
 
         <PriceInput
           value={String(unitPriceInCents)}
@@ -63,7 +64,7 @@ export function ExpenseSelectedMaterialItem({
       <View style={styles.rightArea}>
         <QuantityInput value={quantity} onChange={onQuantityChange} />
 
-        <Text style={styles.lineTotal}>{formatCentsToCurrency(lineTotal)}</Text>
+        <ThemedText style={styles.lineTotal}>{formatCentsToCurrency(lineTotal)}</ThemedText>
       </View>
     </View>
   );

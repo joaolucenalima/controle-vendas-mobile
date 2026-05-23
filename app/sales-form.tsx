@@ -3,14 +3,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    Pressable,
+    StyleSheet,
+    Switch,
+    TextInput,
+    View,
 } from "react-native";
 import { z } from "zod";
 
@@ -20,15 +19,16 @@ import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
 import { DatePickerField } from "@/shared/components/date-picker-field";
 import { PriceInput } from "@/shared/components/price-input";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
 import {
-  dateFilterKeyToSoldAtIso,
-  getTodayDateFilterKey,
-  soldAtIsoToDateFilterKey,
+    dateFilterKeyToSoldAtIso,
+    getTodayDateFilterKey,
+    soldAtIsoToDateFilterKey,
 } from "@/shared/utils/format-date-filter";
 import { SaleProductPickerSheet } from "@/widgets/sales/sale-product-picker-sheet";
 import { SaleSelectedProductItem } from "@/widgets/sales/sale-selected-product-item";
@@ -302,12 +302,12 @@ export default function SalesForm() {
       {isLoading ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator color={theme.colors.tint} />
-          <Text style={styles.loadingText}>Carregando venda...</Text>
+          <ThemedText style={styles.loadingText}>Carregando venda...</ThemedText>
         </View>
       ) : (
         <>
           <View>
-            <Text style={styles.sectionTitle}>Data da venda</Text>
+            <ThemedText style={styles.sectionTitle}>Data da venda</ThemedText>
             <DatePickerField
               value={saleDate}
               onChange={setSaleDate}
@@ -316,10 +316,10 @@ export default function SalesForm() {
           </View>
 
           <View>
-            <Text style={styles.sectionTitle}>Produtos selecionados</Text>
+            <ThemedText style={styles.sectionTitle}>Produtos selecionados</ThemedText>
 
             {selectedCount === 0 ? (
-              <Text style={styles.emptyProductsText}>Nenhum produto adicionado</Text>
+              <ThemedText style={styles.emptyProductsText}>Nenhum produto adicionado</ThemedText>
             ) : (
               <View style={styles.selectedList}>
                 {selectedEntries.map(([productId, data]) => {
@@ -349,23 +349,25 @@ export default function SalesForm() {
               ]}
             >
               <IconSymbol name="plus" size={18} color={theme.colors.tint} />
-              <Text style={styles.addProductsText}>Adicionar produtos</Text>
+              <ThemedText style={styles.addProductsText}>Adicionar produtos</ThemedText>
             </Pressable>
           </View>
 
           <View style={styles.summaryCard}>
             <View style={styles.summaryLine}>
-              <Text style={styles.summaryLabel}>Itens selecionados</Text>
-              <Text style={styles.summaryValue}>{selectedCount}</Text>
+              <ThemedText style={styles.summaryLabel}>Itens selecionados</ThemedText>
+              <ThemedText style={styles.summaryValue}>{selectedCount}</ThemedText>
             </View>
 
             <View style={styles.summaryLine}>
-              <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>{formatCentsToCurrency(subtotalInCents)}</Text>
+              <ThemedText style={styles.summaryLabel}>Subtotal</ThemedText>
+              <ThemedText style={styles.summaryValue}>
+                {formatCentsToCurrency(subtotalInCents)}
+              </ThemedText>
             </View>
 
             <View style={styles.discountRow}>
-              <Text style={styles.summaryLabel}>Desconto</Text>
+              <ThemedText style={styles.summaryLabel}>Desconto</ThemedText>
               <Switch
                 value={hasDiscount}
                 onValueChange={handleDiscountToggle}
@@ -386,21 +388,23 @@ export default function SalesForm() {
 
             {hasDiscount ? (
               <View style={styles.summaryLine}>
-                <Text style={styles.summaryLabel}>Valor do desconto</Text>
-                <Text style={styles.summaryValue}>
+                <ThemedText style={styles.summaryLabel}>Valor do desconto</ThemedText>
+                <ThemedText style={styles.summaryValue}>
                   {formatCentsToCurrency(appliedDiscountInCents)}
-                </Text>
+                </ThemedText>
               </View>
             ) : null}
 
             <View style={styles.totalLine}>
-              <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>{formatCentsToCurrency(totalInCents)}</Text>
+              <ThemedText style={styles.totalLabel}>Total</ThemedText>
+              <ThemedText style={styles.totalValue}>
+                {formatCentsToCurrency(totalInCents)}
+              </ThemedText>
             </View>
           </View>
 
           <View>
-            <Text style={styles.sectionTitle}>Observações</Text>
+            <ThemedText style={styles.sectionTitle}>Observações</ThemedText>
             <Controller
               control={form.control}
               name="notes"
@@ -417,7 +421,7 @@ export default function SalesForm() {
                     textAlignVertical="top"
                   />
                   {fieldState.error?.message ? (
-                    <Text style={styles.errorText}>{fieldState.error.message}</Text>
+                    <ThemedText style={styles.errorText}>{fieldState.error.message}</ThemedText>
                   ) : null}
                 </>
               )}
@@ -436,9 +440,9 @@ export default function SalesForm() {
             {isSubmitting ? (
               <ActivityIndicator color={theme.colors.background} />
             ) : (
-              <Text style={styles.submitButtonText}>
+              <ThemedText style={styles.submitButtonText}>
                 {isEditing ? "Salvar venda" : "Criar venda"}
-              </Text>
+              </ThemedText>
             )}
           </Pressable>
         </>

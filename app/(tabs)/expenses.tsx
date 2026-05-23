@@ -1,10 +1,11 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
 import { useExpenseStore } from "@/features/expenses/expense-store";
 import type { Expense } from "@/features/expenses/expense.types";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -40,9 +41,11 @@ export default function ExpensesScreen() {
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
       <View style={styles.cardHeader}>
-        <Text style={styles.cardPrice}>{formatCentsToCurrency(item.amount_in_cents)}</Text>
+        <ThemedText style={styles.cardPrice}>
+          {formatCentsToCurrency(item.amount_in_cents)}
+        </ThemedText>
       </View>
-      {item.notes ? <Text style={styles.cardDescription}>{item.notes}</Text> : null}
+      {item.notes ? <ThemedText style={styles.cardDescription}>{item.notes}</ThemedText> : null}
     </Pressable>
   );
 
@@ -50,8 +53,8 @@ export default function ExpensesScreen() {
     <TabsScreenLayout>
       <View style={styles.safeAreaContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Despesas</Text>
-          <Text style={styles.subtitle}>Registre suas despesas</Text>
+          <ThemedText style={styles.title}>Despesas</ThemedText>
+          <ThemedText style={styles.subtitle}>Registre suas despesas</ThemedText>
         </View>
 
         {hasExpenses ? (
@@ -64,14 +67,14 @@ export default function ExpensesScreen() {
           />
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>Nenhuma despesa cadastrada</Text>
-            <Text style={styles.emptySubtitle}>Adicione sua primeira despesa.</Text>
+            <ThemedText style={styles.emptyTitle}>Nenhuma despesa cadastrada</ThemedText>
+            <ThemedText style={styles.emptySubtitle}>Adicione sua primeira despesa.</ThemedText>
             <Pressable
               onPress={handleCreate}
               accessibilityRole="button"
               style={({ pressed }) => [styles.emptyButton, pressed && styles.emptyButtonPressed]}
             >
-              <Text style={styles.emptyButtonText}>Adicionar despesa</Text>
+              <ThemedText style={styles.emptyButtonText}>Adicionar despesa</ThemedText>
             </Pressable>
           </View>
         )}

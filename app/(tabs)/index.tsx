@@ -1,20 +1,18 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { useDashboardStore } from "@/features/dashboard/dashboard-store";
 import { useProductStore } from "@/features/products/product-store";
 import { DatePickerField } from "@/shared/components/date-picker-field";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
-import {
-  formatDateFilterDisplay,
-  parseDateFilterKey,
-} from "@/shared/utils/format-date-filter";
+import { formatDateFilterDisplay, parseDateFilterKey } from "@/shared/utils/format-date-filter";
 
 function formatSaleDate(value: string) {
   return new Intl.DateTimeFormat("pt-BR", {
@@ -145,12 +143,12 @@ export default function HomeScreen() {
     <TabsScreenLayout>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          <Text style={styles.title}>Painel Principal</Text>
-          <Text style={styles.todayLabel}>{todayLabel}</Text>
+          <ThemedText style={styles.title}>Painel Principal</ThemedText>
+          <ThemedText style={styles.todayLabel}>{todayLabel}</ThemedText>
         </View>
 
         <View style={styles.filterCard}>
-          <Text style={styles.filterTitle}>Período</Text>
+          <ThemedText style={styles.filterTitle}>Período</ThemedText>
 
           <View style={styles.filterInputs}>
             <DatePickerField
@@ -176,7 +174,7 @@ export default function HomeScreen() {
               accessibilityRole="button"
               style={({ pressed }) => [styles.filterButton, pressed && styles.filterButtonPressed]}
             >
-              <Text style={styles.filterButtonText}>Filtrar</Text>
+              <ThemedText style={styles.filterButtonText}>Filtrar</ThemedText>
             </Pressable>
 
             <Pressable
@@ -184,43 +182,43 @@ export default function HomeScreen() {
               accessibilityRole="button"
               style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
             >
-              <Text style={styles.clearButtonText}>Limpar</Text>
+              <ThemedText style={styles.clearButtonText}>Limpar</ThemedText>
             </Pressable>
           </View>
         </View>
 
-        <Text style={styles.periodLabel}>{periodLabel}</Text>
+        <ThemedText style={styles.periodLabel}>{periodLabel}</ThemedText>
 
         <View style={[styles.card, styles.totalProfitContainer]}>
           <View style={styles.totalProfitLeft}>
-            <Text style={styles.totalProfitLabel}>Lucro total</Text>
-            <Text style={styles.totalProfitMargin}>
+            <ThemedText style={styles.totalProfitLabel}>Lucro total</ThemedText>
+            <ThemedText style={styles.totalProfitMargin}>
               {marginPercent !== null ? `Margem de ${marginPercent}%` : "Sem receita no período"}
-            </Text>
+            </ThemedText>
           </View>
-          <Text
+          <ThemedText
             style={[
               styles.metricValue,
               profitInCents >= 0 ? styles.profitPositive : styles.profitNegative,
             ]}
           >
             {formatCentsToCurrency(profitInCents)}
-          </Text>
+          </ThemedText>
         </View>
 
         <View style={styles.grid}>
           {metricCards.map((metric) => (
             <View key={metric.label} style={[styles.card, styles.metricCard]}>
-              <Text style={styles.metricLabel}>{metric.label}</Text>
-              <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit>
+              <ThemedText style={styles.metricLabel}>{metric.label}</ThemedText>
+              <ThemedText style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit>
                 {metric.isCurrencyValue ? formatCentsToCurrency(metric.value) : metric.value}
-              </Text>
+              </ThemedText>
             </View>
           ))}
         </View>
 
         <View>
-          <Text style={styles.sectionTitle}>Ações rápidas</Text>
+          <ThemedText style={styles.sectionTitle}>Ações rápidas</ThemedText>
           <View style={[styles.card, styles.quickActionsContainer]}>
             <Pressable
               onPress={() => router.push("/sales-form" as never)}
@@ -228,7 +226,7 @@ export default function HomeScreen() {
               style={({ pressed }) => [styles.actionCard, pressed && styles.cardPressed]}
             >
               <IconSymbol name="plus" size={24} weight="medium" color={theme.colors.green} />
-              <Text style={styles.actionTitle}>Nova venda</Text>
+              <ThemedText style={styles.actionTitle}>Nova venda</ThemedText>
             </Pressable>
 
             <View style={styles.actionsSeparator} />
@@ -239,39 +237,41 @@ export default function HomeScreen() {
               style={({ pressed }) => [styles.actionCard, pressed && styles.cardPressed]}
             >
               <IconSymbol name="plus" size={24} weight="medium" color={theme.colors.red} />
-              <Text style={styles.actionTitle}>Nova despesa</Text>
+              <ThemedText style={styles.actionTitle}>Nova despesa</ThemedText>
             </Pressable>
           </View>
         </View>
 
         <View>
-          <Text style={styles.sectionTitle}>Última venda</Text>
+          <ThemedText style={styles.sectionTitle}>Última venda</ThemedText>
           <View style={[styles.card, styles.lastSaleCard]}>
             {isLoading ? (
               <ActivityIndicator color={theme.colors.tint} />
             ) : lastSale === null ? (
-              <Text style={styles.emptyText}>Nenhuma venda registrada</Text>
+              <ThemedText style={styles.emptyText}>Nenhuma venda registrada</ThemedText>
             ) : (
               <>
                 <View style={[styles.saleItem, styles.lastSaleHeader]}>
-                  <Text style={styles.saleDate}>Data: {formatSaleDate(lastSale.sold_at)}</Text>
-                  <Text style={[styles.saleAmount, styles.lastSaleTotal]}>
+                  <ThemedText style={styles.saleDate}>
+                    Data: {formatSaleDate(lastSale.sold_at)}
+                  </ThemedText>
+                  <ThemedText style={[styles.saleAmount, styles.lastSaleTotal]}>
                     Total: {formatCentsToCurrency(lastSale.total_in_cents)}
-                  </Text>
+                  </ThemedText>
                 </View>
 
                 {lastSale.items.map((item) => (
                   <View style={styles.saleItem} key={item.id}>
                     <View style={styles.saleLeft}>
-                      <Text style={styles.saleTitle}>
+                      <ThemedText style={styles.saleTitle}>
                         {productNamesById[item.product_id] ?? `Produto #${item.product_id}`}
-                      </Text>
-                      <Text style={styles.saleQuantity}>x{item.quantity}</Text>
+                      </ThemedText>
+                      <ThemedText style={styles.saleQuantity}>x{item.quantity}</ThemedText>
                     </View>
                     <View style={styles.saleRight}>
-                      <Text style={styles.saleAmount}>
+                      <ThemedText style={styles.saleAmount}>
                         {formatCentsToCurrency(item.subtotal_in_cents)}
-                      </Text>
+                      </ThemedText>
                     </View>
                   </View>
                 ))}
@@ -505,3 +505,4 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.rounded,
     },
   });
+

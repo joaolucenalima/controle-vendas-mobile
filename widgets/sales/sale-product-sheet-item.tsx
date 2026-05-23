@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import type { Product } from "@/features/products/product.types";
+import ThemedText from "@/shared/components/themed-text";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 
 type SaleProductSheetItemProps = {
@@ -17,20 +18,24 @@ export function SaleProductSheetItem({ product, selected, onToggle }: SaleProduc
       onPress={onToggle}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: selected }}
-      style={({ pressed }) => [styles.card, selected && styles.cardSelected, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.card,
+        selected && styles.cardSelected,
+        pressed && styles.pressed,
+      ]}
     >
       <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-        {selected ? <Text style={styles.checkboxLabel}>✓</Text> : null}
+        {selected ? <ThemedText style={styles.checkboxLabel}>✓</ThemedText> : null}
       </View>
 
       <View style={styles.productInfo}>
-        <Text style={styles.productName}>{product.name}</Text>
+        <ThemedText style={styles.productName}>{product.name}</ThemedText>
         {product.description ? (
-          <Text style={styles.productDescription} numberOfLines={2}>
+          <ThemedText style={styles.productDescription} numberOfLines={2}>
             {product.description}
-          </Text>
+          </ThemedText>
         ) : (
-          <Text style={styles.productDescriptionMuted}>Sem descrição</Text>
+          <ThemedText style={styles.productDescriptionMuted}>Sem descrição</ThemedText>
         )}
       </View>
     </Pressable>
@@ -96,3 +101,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontStyle: "italic",
     },
   });
+

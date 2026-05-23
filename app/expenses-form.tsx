@@ -3,15 +3,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { z } from "zod";
 
 import { ExpenseService } from "@/features/expenses/expense-service";
@@ -19,6 +11,7 @@ import { useExpenseStore } from "@/features/expenses/expense-store";
 import { useMaterialStore } from "@/features/materials/material-store";
 import type { Material } from "@/features/materials/material.types";
 import { DatePickerField } from "@/shared/components/date-picker-field";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -333,12 +326,12 @@ export default function ExpensesForm() {
       {isLoading ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator color={theme.colors.tint} />
-          <Text style={styles.loadingText}>Carregando despesa...</Text>
+          <ThemedText style={styles.loadingText}>Carregando despesa...</ThemedText>
         </View>
       ) : (
         <>
           <View>
-            <Text style={styles.label}>Data</Text>
+            <ThemedText style={styles.label}>Data</ThemedText>
             <DatePickerField
               value={expenseDate}
               onChange={setExpenseDate}
@@ -347,14 +340,16 @@ export default function ExpensesForm() {
           </View>
 
           <View>
-            <Text style={styles.label}>Materiais</Text>
+            <ThemedText style={styles.label}>Materiais</ThemedText>
 
             {selectedCount === 0 ? (
               <View style={styles.emptyMaterialsState}>
-                <Text style={styles.emptyMaterialsTitle}>Nenhum material adicionado</Text>
-                <Text style={styles.emptyMaterialsSubtitle}>
+                <ThemedText style={styles.emptyMaterialsTitle}>
+                  Nenhum material adicionado
+                </ThemedText>
+                <ThemedText style={styles.emptyMaterialsSubtitle}>
                   Selecione um ou mais materiais para compor esta despesa.
-                </Text>
+                </ThemedText>
               </View>
             ) : (
               <View style={styles.selectedList}>{materialsList}</View>
@@ -369,24 +364,26 @@ export default function ExpensesForm() {
               ]}
             >
               <IconSymbol name="plus" size={18} color={theme.colors.tint} />
-              <Text style={styles.addMaterialsText}>Adicionar materiais</Text>
+              <ThemedText style={styles.addMaterialsText}>Adicionar materiais</ThemedText>
             </Pressable>
           </View>
 
           <View style={styles.summaryCard}>
             <View style={styles.summaryLine}>
-              <Text style={styles.summaryLabel}>Materiais selecionados</Text>
-              <Text style={styles.summaryValue}>{selectedCount}</Text>
+              <ThemedText style={styles.summaryLabel}>Materiais selecionados</ThemedText>
+              <ThemedText style={styles.summaryValue}>{selectedCount}</ThemedText>
             </View>
 
             <View style={styles.summaryLine}>
-              <Text style={styles.summaryLabel}>Total</Text>
-              <Text style={styles.summaryValue}>{formatCentsToCurrency(totalInCents)}</Text>
+              <ThemedText style={styles.summaryLabel}>Total</ThemedText>
+              <ThemedText style={styles.summaryValue}>
+                {formatCentsToCurrency(totalInCents)}
+              </ThemedText>
             </View>
           </View>
 
           <View>
-            <Text style={styles.label}>Notas</Text>
+            <ThemedText style={styles.label}>Notas</ThemedText>
             <Controller
               control={form.control}
               name="notes"
@@ -403,7 +400,7 @@ export default function ExpensesForm() {
                     textAlignVertical="top"
                   />
                   {fieldState.error?.message ? (
-                    <Text style={styles.errorText}>{fieldState.error.message}</Text>
+                    <ThemedText style={styles.errorText}>{fieldState.error.message}</ThemedText>
                   ) : null}
                 </>
               )}
@@ -422,7 +419,7 @@ export default function ExpensesForm() {
             {isSubmitting ? (
               <ActivityIndicator color={theme.colors.background} />
             ) : (
-              <Text style={styles.submitButtonText}>{submitLabel}</Text>
+              <ThemedText style={styles.submitButtonText}>{submitLabel}</ThemedText>
             )}
           </Pressable>
         </>

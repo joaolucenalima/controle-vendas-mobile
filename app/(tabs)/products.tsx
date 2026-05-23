@@ -2,10 +2,11 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
 import { useProductStore } from "@/features/products/product-store";
 import type { Product } from "@/features/products/product.types";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -44,13 +45,13 @@ export default function ProductsScreen() {
         <Image source={{ uri: item.image_url }} style={styles.cardImage} contentFit="cover" />
       ) : (
         <View style={styles.cardImagePlaceholder}>
-          <Text style={styles.cardImagePlaceholderText}>Sem imagem</Text>
+          <ThemedText style={styles.cardImagePlaceholderText}>Sem imagem</ThemedText>
         </View>
       )}
 
-      <Text style={styles.cardTitle}>{item.name}</Text>
+      <ThemedText style={styles.cardTitle}>{item.name}</ThemedText>
 
-      <Text style={styles.cardPrice}>{formatCentsToCurrency(item.price_in_cents)}</Text>
+      <ThemedText style={styles.cardPrice}>{formatCentsToCurrency(item.price_in_cents)}</ThemedText>
     </Pressable>
   );
 
@@ -58,8 +59,8 @@ export default function ProductsScreen() {
     <TabsScreenLayout>
       <View style={styles.safeAreaContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Produtos</Text>
-          <Text style={styles.subtitle}>Gerencie seu catálogo</Text>
+          <ThemedText style={styles.title}>Produtos</ThemedText>
+          <ThemedText style={styles.subtitle}>Gerencie seu catálogo</ThemedText>
         </View>
 
         {hasProducts ? (
@@ -73,16 +74,16 @@ export default function ProductsScreen() {
           />
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>Nenhum produto cadastrado</Text>
-            <Text style={styles.emptySubtitle}>
+            <ThemedText style={styles.emptyTitle}>Nenhum produto cadastrado</ThemedText>
+            <ThemedText style={styles.emptySubtitle}>
               Cadastre seu primeiro produto e organize suas vendas.
-            </Text>
+            </ThemedText>
             <Pressable
               onPress={handleCreate}
               accessibilityRole="button"
               style={({ pressed }) => [styles.emptyButton, pressed && styles.emptyButtonPressed]}
             >
-              <Text style={styles.emptyButtonText}>Adicionar produto</Text>
+              <ThemedText style={styles.emptyButtonText}>Adicionar produto</ThemedText>
             </Pressable>
           </View>
         )}

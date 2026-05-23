@@ -4,21 +4,14 @@ import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { z } from "zod";
 
 import { ProductService } from "@/features/products/product-service";
 import { useProductStore } from "@/features/products/product-store";
 import type { Product } from "@/features/products/product.types";
 import { PriceInput } from "@/shared/components/price-input";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -205,12 +198,12 @@ export default function ProductsForm() {
       {isLoadingProduct ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator color={theme.colors.tint} />
-          <Text style={styles.loadingText}>Carregando produto...</Text>
+          <ThemedText style={styles.loadingText}>Carregando produto...</ThemedText>
         </View>
       ) : (
         <>
           <View style={styles.section}>
-            <Text style={styles.label}>Nome</Text>
+            <ThemedText style={styles.label}>Nome</ThemedText>
             <Controller
               control={form.control}
               name="name"
@@ -227,7 +220,7 @@ export default function ProductsForm() {
                     returnKeyType="next"
                   />
                   {fieldState.error?.message ? (
-                    <Text style={styles.errorText}>{fieldState.error.message}</Text>
+                    <ThemedText style={styles.errorText}>{fieldState.error.message}</ThemedText>
                   ) : null}
                 </>
               )}
@@ -235,7 +228,7 @@ export default function ProductsForm() {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.label}>Preço</Text>
+            <ThemedText style={styles.label}>Preço</ThemedText>
             <Controller
               control={form.control}
               name="price"
@@ -249,20 +242,20 @@ export default function ProductsForm() {
                     style={[styles.input, fieldState.error && styles.inputError]}
                   />
                   {fieldState.error?.message ? (
-                    <Text style={styles.errorText}>{fieldState.error.message}</Text>
+                    <ThemedText style={styles.errorText}>{fieldState.error.message}</ThemedText>
                   ) : null}
                 </>
               )}
             />
             {product ? (
-              <Text style={styles.helperText}>
+              <ThemedText style={styles.helperText}>
                 Atual: {formatCentsToPriceString(product.price_in_cents)}
-              </Text>
+              </ThemedText>
             ) : null}
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.label}>Imagem do produto</Text>
+            <ThemedText style={styles.label}>Imagem do produto</ThemedText>
 
             {imageUrl ? (
               <>
@@ -277,7 +270,7 @@ export default function ProductsForm() {
                       pressed && styles.imageButtonPressed,
                     ]}
                   >
-                    <Text style={styles.imageButtonText}>Selecionar outra imagem</Text>
+                    <ThemedText style={styles.imageButtonText}>Selecionar outra imagem</ThemedText>
                   </Pressable>
 
                   <Pressable
@@ -289,7 +282,7 @@ export default function ProductsForm() {
                       (!imageUrl || pressed) && styles.imageButtonSecondaryPressed,
                     ]}
                   >
-                    <Text style={styles.imageButtonSecondaryText}>Remover</Text>
+                    <ThemedText style={styles.imageButtonSecondaryText}>Remover</ThemedText>
                   </Pressable>
                 </View>
               </>
@@ -300,14 +293,18 @@ export default function ProductsForm() {
                 style={styles.imagePlaceholderButton}
               >
                 <IconSymbol name="camera.fill" size={36} color={theme.colors.textMuted} />
-                <Text style={styles.imagePlaceholderText}>Nenhuma imagem selecionada</Text>
-                <Text style={styles.addImageText}>Clique para adicionar uma imagem</Text>
+                <ThemedText style={styles.imagePlaceholderText}>
+                  Nenhuma imagem selecionada
+                </ThemedText>
+                <ThemedText style={styles.addImageText}>
+                  Clique para adicionar uma imagem
+                </ThemedText>
               </Pressable>
             )}
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.label}>Descrição</Text>
+            <ThemedText style={styles.label}>Descrição</ThemedText>
             <Controller
               control={form.control}
               name="description"
@@ -324,7 +321,7 @@ export default function ProductsForm() {
                     textAlignVertical="top"
                   />
                   {fieldState.error?.message ? (
-                    <Text style={styles.errorText}>{fieldState.error.message}</Text>
+                    <ThemedText style={styles.errorText}>{fieldState.error.message}</ThemedText>
                   ) : null}
                 </>
               )}
@@ -343,7 +340,7 @@ export default function ProductsForm() {
             {isSubmitting ? (
               <ActivityIndicator color={theme.colors.background} />
             ) : (
-              <Text style={styles.submitButtonText}>{submitLabel}</Text>
+              <ThemedText style={styles.submitButtonText}>{submitLabel}</ThemedText>
             )}
           </Pressable>
         </>

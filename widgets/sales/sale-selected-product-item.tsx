@@ -1,7 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import type { Product } from "@/features/products/product.types";
 import { QuantityInput } from "@/shared/components/quantity-input";
+import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -39,14 +40,14 @@ export function SaleSelectedProductItem({
       </Pressable>
 
       <View style={styles.productInfo}>
-        <Text style={styles.productName}>{product.name}</Text>
-        <Text style={styles.unitPrice}>{formatCentsToCurrency(unitPriceInCents)}</Text>
+        <ThemedText style={styles.productName}>{product.name}</ThemedText>
+        <ThemedText style={styles.unitPrice}>{formatCentsToCurrency(unitPriceInCents)}</ThemedText>
       </View>
 
       <View style={styles.rightArea}>
         <QuantityInput value={quantity} onChange={onQuantityChange} />
 
-        <Text style={styles.lineTotal}>{formatCentsToCurrency(lineTotal)}</Text>
+        <ThemedText style={styles.lineTotal}>{formatCentsToCurrency(lineTotal)}</ThemedText>
       </View>
     </View>
   );
