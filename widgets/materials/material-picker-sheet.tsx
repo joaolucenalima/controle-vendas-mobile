@@ -1,5 +1,14 @@
 import { useMemo } from "react";
-import { FlatList, Modal, Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { Material } from "@/features/materials/material.types";
@@ -49,90 +58,95 @@ export function MaterialPickerSheet({
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" />
 
-        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-          <View style={styles.handle} />
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}> 
+            <View style={styles.handle} />
 
-          <View style={styles.header}>
-            <ThemedText style={styles.title}>Adicionar materiais</ThemedText>
+            <View style={styles.header}>
+              <ThemedText style={styles.title}>Adicionar materiais</ThemedText>
+              <Pressable
+                onPress={onClose}
+                accessibilityRole="button"
+                accessibilityLabel="Fechar"
+                hitSlop={8}
+                style={({ pressed }) => [styles.closeButton, pressed && styles.closePressed]}
+              >
+                <IconSymbol name="xmark" size={20} color={theme.colors.textMuted} />
+              </Pressable>
+            </View>
+
+            <View style={styles.searchWrap}>
+              <IconSymbol name="magnifyingglass" size={18} color={theme.colors.textMuted} />
+              <TextInput
+                value={search}
+                onChangeText={onSearchChange}
+                placeholder="Buscar material"
+                placeholderTextColor={theme.colors.textMuted}
+                style={styles.searchInput}
+                autoCorrect={false}
+                autoCapitalize="none"
+                clearButtonMode="while-editing"
+              />
+            </View>
+
+            <FlatList
+              data={filteredMaterials}
+              keyExtractor={(item) => String(item.id)}
+              keyboardShouldPersistTaps="handled"
+              style={styles.list}
+              contentContainerStyle={styles.listContent}
+              ListEmptyComponent={
+                <ThemedText style={styles.emptyText}>
+                  {search.trim() ? "Nenhum material encontrado" : "Nenhum material cadastrado"}
+                </ThemedText>
+              }
+              renderItem={({ item }) => (
+                <Pressable
+                  onPress={() => onToggleMaterial(item.id)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: pendingSet.has(item.id) }}
+                  style={({ pressed }) => [
+                    styles.card,
+                    pendingSet.has(item.id) && styles.cardSelected,
+                    pressed && styles.cardPressed,
+                  ]}
+                >
+                  <View style={[styles.checkbox, pendingSet.has(item.id) && styles.checkboxSelected]}>
+                    {pendingSet.has(item.id) ? (
+                      <ThemedText style={styles.checkboxLabel}>✓</ThemedText>
+                    ) : null}
+                  </View>
+
+                  <View style={styles.materialInfo}>
+                    <ThemedText style={styles.materialName}>{item.name}</ThemedText>
+                    {item.price_in_cents !== null ? (
+                      <ThemedText style={styles.materialPrice}>
+                        {formatCentsToCurrency(item.price_in_cents)}
+                      </ThemedText>
+                    ) : (
+                      <ThemedText style={styles.materialPriceMuted}>Sem preço</ThemedText>
+                    )}
+                  </View>
+                </Pressable>
+              )}
+            />
+
             <Pressable
-              onPress={onClose}
+              onPress={onConfirm}
+              disabled={!canConfirm}
               accessibilityRole="button"
-              accessibilityLabel="Fechar"
-              hitSlop={8}
-              style={({ pressed }) => [styles.closeButton, pressed && styles.closePressed]}
+              style={({ pressed }) => [
+                styles.confirmButton,
+                (!canConfirm || pressed) && styles.confirmButtonDisabled,
+              ]}
             >
-              <IconSymbol name="xmark" size={20} color={theme.colors.textMuted} />
+              <ThemedText style={styles.confirmButtonText}>Adicionar materiais</ThemedText>
             </Pressable>
           </View>
-
-          <View style={styles.searchWrap}>
-            <IconSymbol name="magnifyingglass" size={18} color={theme.colors.textMuted} />
-            <TextInput
-              value={search}
-              onChangeText={onSearchChange}
-              placeholder="Buscar material"
-              placeholderTextColor={theme.colors.textMuted}
-              style={styles.searchInput}
-              autoCorrect={false}
-              autoCapitalize="none"
-              clearButtonMode="while-editing"
-            />
-          </View>
-
-          <FlatList
-            data={filteredMaterials}
-            keyExtractor={(item) => String(item.id)}
-            keyboardShouldPersistTaps="handled"
-            style={styles.list}
-            contentContainerStyle={styles.listContent}
-            ListEmptyComponent={
-              <ThemedText style={styles.emptyText}>
-                {search.trim() ? "Nenhum material encontrado" : "Nenhum material cadastrado"}
-              </ThemedText>
-            }
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => onToggleMaterial(item.id)}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: pendingSet.has(item.id) }}
-                style={({ pressed }) => [
-                  styles.card,
-                  pendingSet.has(item.id) && styles.cardSelected,
-                  pressed && styles.cardPressed,
-                ]}
-              >
-                <View style={[styles.checkbox, pendingSet.has(item.id) && styles.checkboxSelected]}>
-                  {pendingSet.has(item.id) ? (
-                    <ThemedText style={styles.checkboxLabel}>✓</ThemedText>
-                  ) : null}
-                </View>
-
-                <View style={styles.materialInfo}>
-                  <ThemedText style={styles.materialName}>{item.name}</ThemedText>
-                  {item.price_in_cents !== null ? (
-                    <ThemedText style={styles.materialPrice}>
-                      {formatCentsToCurrency(item.price_in_cents)}
-                    </ThemedText>
-                  ) : (
-                    <ThemedText style={styles.materialPriceMuted}>Sem preço</ThemedText>
-                  )}
-                </View>
-              </Pressable>
-            )}
-          />
-
-          <Pressable
-            onPress={onConfirm}
-            disabled={!canConfirm}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.confirmButton,
-              (!canConfirm || pressed) && styles.confirmButtonDisabled,
-            ]}
-          >
-            <ThemedText style={styles.confirmButtonText}>Adicionar materiais</ThemedText>
-          </Pressable>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
@@ -147,6 +161,10 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     backdrop: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: "rgba(0, 0, 0, 0.45)",
+    },
+    keyboardAvoidingView: {
+      flex: 1,
+      justifyContent: "flex-end",
     },
     sheet: {
       maxHeight: "82%",

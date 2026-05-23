@@ -1,5 +1,14 @@
 import { useMemo } from "react";
-import { FlatList, Modal, Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { Product } from "@/features/products/product.types";
@@ -53,68 +62,73 @@ export function SaleProductPickerSheet({
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" />
 
-        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-          <View style={styles.handle} />
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}> 
+            <View style={styles.handle} />
 
-          <View style={styles.header}>
-            <ThemedText style={styles.title}>Adicionar produtos</ThemedText>
+            <View style={styles.header}>
+              <ThemedText style={styles.title}>Adicionar produtos</ThemedText>
+              <Pressable
+                onPress={onClose}
+                accessibilityRole="button"
+                accessibilityLabel="Fechar"
+                hitSlop={8}
+                style={({ pressed }) => [styles.closeButton, pressed && styles.closePressed]}
+              >
+                <IconSymbol name="xmark" size={20} color={theme.colors.textMuted} />
+              </Pressable>
+            </View>
+
+            <View style={styles.searchWrap}>
+              <IconSymbol name="magnifyingglass" size={18} color={theme.colors.textMuted} />
+              <TextInput
+                value={search}
+                onChangeText={onSearchChange}
+                placeholder="Buscar por nome ou descrição"
+                placeholderTextColor={theme.colors.textMuted}
+                style={styles.searchInput}
+                autoCorrect={false}
+                autoCapitalize="none"
+                clearButtonMode="while-editing"
+              />
+            </View>
+
+            <FlatList
+              data={filteredProducts}
+              keyExtractor={(item) => String(item.id)}
+              keyboardShouldPersistTaps="handled"
+              style={styles.list}
+              contentContainerStyle={styles.listContent}
+              ListEmptyComponent={
+                <ThemedText style={styles.emptyText}>
+                  {search.trim() ? "Nenhum produto encontrado" : "Nenhum produto cadastrado"}
+                </ThemedText>
+              }
+              renderItem={({ item }) => (
+                <SaleProductSheetItem
+                  product={item}
+                  selected={pendingSet.has(item.id)}
+                  onToggle={() => onToggleProduct(item.id)}
+                />
+              )}
+            />
+
             <Pressable
-              onPress={onClose}
+              onPress={onConfirm}
+              disabled={!canConfirm}
               accessibilityRole="button"
-              accessibilityLabel="Fechar"
-              hitSlop={8}
-              style={({ pressed }) => [styles.closeButton, pressed && styles.closePressed]}
+              style={({ pressed }) => [
+                styles.confirmButton,
+                (!canConfirm || pressed) && styles.confirmButtonDisabled,
+              ]}
             >
-              <IconSymbol name="xmark" size={20} color={theme.colors.textMuted} />
+              <ThemedText style={styles.confirmButtonText}>Adicionar produtos</ThemedText>
             </Pressable>
           </View>
-
-          <View style={styles.searchWrap}>
-            <IconSymbol name="magnifyingglass" size={18} color={theme.colors.textMuted} />
-            <TextInput
-              value={search}
-              onChangeText={onSearchChange}
-              placeholder="Buscar por nome ou descrição"
-              placeholderTextColor={theme.colors.textMuted}
-              style={styles.searchInput}
-              autoCorrect={false}
-              autoCapitalize="none"
-              clearButtonMode="while-editing"
-            />
-          </View>
-
-          <FlatList
-            data={filteredProducts}
-            keyExtractor={(item) => String(item.id)}
-            keyboardShouldPersistTaps="handled"
-            style={styles.list}
-            contentContainerStyle={styles.listContent}
-            ListEmptyComponent={
-              <ThemedText style={styles.emptyText}>
-                {search.trim() ? "Nenhum produto encontrado" : "Nenhum produto cadastrado"}
-              </ThemedText>
-            }
-            renderItem={({ item }) => (
-              <SaleProductSheetItem
-                product={item}
-                selected={pendingSet.has(item.id)}
-                onToggle={() => onToggleProduct(item.id)}
-              />
-            )}
-          />
-
-          <Pressable
-            onPress={onConfirm}
-            disabled={!canConfirm}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.confirmButton,
-              (!canConfirm || pressed) && styles.confirmButtonDisabled,
-            ]}
-          >
-            <ThemedText style={styles.confirmButtonText}>Adicionar produtos</ThemedText>
-          </Pressable>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
@@ -129,6 +143,10 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     backdrop: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: "rgba(0, 0, 0, 0.45)",
+    },
+    keyboardAvoidingView: {
+      flex: 1,
+      justifyContent: "flex-end",
     },
     sheet: {
       maxHeight: "82%",
