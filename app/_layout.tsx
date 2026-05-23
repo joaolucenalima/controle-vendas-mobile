@@ -3,7 +3,6 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import "react-native-reanimated";
 
 import { initializeDatabase } from "@/database/migrations/init";
 import { configureDatabase } from "@/database/sqlite";

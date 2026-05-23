@@ -19,6 +19,8 @@ import { z } from "zod";
 import { MaterialService } from "@/features/materials/material-service";
 import { useMaterialStore } from "@/features/materials/material-store";
 import type { Material } from "@/features/materials/material.types";
+import { ConfirmationModal } from "@/shared/components/confirmation-modal";
+import { DeleteButton } from "@/shared/components/delete-button";
 import { PriceInput } from "@/shared/components/price-input";
 import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
@@ -64,9 +66,11 @@ export default function MaterialsForm() {
   const theme = useTheme();
   const styles = useStyles(createStyles);
 
-  const { createMaterial, updateMaterial } = useMaterialStore();
+  const { createMaterial, updateMaterial, deleteMaterial } = useMaterialStore();
 
   const [isLoadingMaterial, setIsLoadingMaterial] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [material, setMaterial] = useState<Material | null>(null);
 
   const isEditing = !!id;
@@ -156,6 +160,25 @@ export default function MaterialsForm() {
     }
   }
 
+  async function handleDeleteMaterial() {
+    if (!parsedId) {
+      Alert.alert("Erro", "ID inválido");
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await deleteMaterial(parsedId);
+      setIsDeleteModalVisible(false);
+      router.back();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Falha ao excluir material";
+      Alert.alert("Erro", message);
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   const submitLabel = isEditing ? "Salvar" : "Criar";
 
   return (
@@ -175,7 +198,20 @@ export default function MaterialsForm() {
               <IconSymbol name="chevron.left" size={22} color={theme.colors.text} />
             </Pressable>
           ),
+          headerRight: () =>
+            isEditing ? <DeleteButton onPress={() => setIsDeleteModalVisible(true)} /> : null,
         }}
+      />
+
+      <ConfirmationModal
+        visible={isDeleteModalVisible}
+        title="Excluir material?"
+        message="Essa ação é permanente e vai remover o material do cadastro."
+        confirmLabel="Excluir"
+        confirmTone="danger"
+        isConfirming={isDeleting}
+        onConfirm={handleDeleteMaterial}
+        onCancel={() => setIsDeleteModalVisible(false)}
       />
 
       <SafeAreaView style={styles.safeArea} edges={["bottom"]}>

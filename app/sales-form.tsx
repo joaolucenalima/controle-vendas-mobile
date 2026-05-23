@@ -17,7 +17,9 @@ import { useProductStore } from "@/features/products/product-store";
 import { SaleService } from "@/features/sales/sale-service";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
+import { ConfirmationModal } from "@/shared/components/confirmation-modal";
 import { DatePickerField } from "@/shared/components/date-picker-field";
+import { DeleteButton } from "@/shared/components/delete-button";
 import { PriceInput } from "@/shared/components/price-input";
 import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
@@ -63,10 +65,12 @@ export default function SalesForm() {
   const styles = useStyles(createStyles);
 
   const { products, loadProducts } = useProductStore();
-  const { createSale, updateSaleWithItems } = useSaleStore();
+  const { createSale, updateSaleWithItems, deleteSale } = useSaleStore();
 
   const [isLoading, setIsLoading] = useState(false);
   const [existingSale, setExistingSale] = useState<Sale | null>(null);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState(
     () => new Map<number, SelectedProductState>(),
   );
@@ -297,8 +301,43 @@ export default function SalesForm() {
     }
   }
 
+  async function handleDeleteSale() {
+    if (!parsedId) {
+      Alert.alert("Erro", "ID inválido");
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await deleteSale(parsedId);
+      setIsDeleteModalVisible(false);
+      router.back();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Falha ao excluir venda";
+      Alert.alert("Erro", message);
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   return (
-    <StackFormWrapper title={title}>
+    <StackFormWrapper
+      title={title}
+      headerRight={
+        isEditing ? <DeleteButton onPress={() => setIsDeleteModalVisible(true)} /> : null
+      }
+    >
+      <ConfirmationModal
+        visible={isDeleteModalVisible}
+        title="Excluir venda?"
+        message="Essa ação é permanente e vai remover a venda do cadastro."
+        confirmLabel="Excluir"
+        confirmTone="danger"
+        isConfirming={isDeleting}
+        onConfirm={handleDeleteSale}
+        onCancel={() => setIsDeleteModalVisible(false)}
+      />
+
       {isLoading ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator color={theme.colors.tint} />

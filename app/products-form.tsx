@@ -10,6 +10,8 @@ import { z } from "zod";
 import { ProductService } from "@/features/products/product-service";
 import { useProductStore } from "@/features/products/product-store";
 import type { Product } from "@/features/products/product.types";
+import { ConfirmationModal } from "@/shared/components/confirmation-modal";
+import { DeleteButton } from "@/shared/components/delete-button";
 import { PriceInput } from "@/shared/components/price-input";
 import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
@@ -66,9 +68,11 @@ export default function ProductsForm() {
   const theme = useTheme();
   const styles = useStyles(createStyles);
 
-  const { createProduct, updateProduct } = useProductStore();
+  const { createProduct, updateProduct, deleteProduct } = useProductStore();
 
   const [isLoadingProduct, setIsLoadingProduct] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
@@ -191,10 +195,45 @@ export default function ProductsForm() {
     }
   }
 
+  async function handleDeleteProduct() {
+    if (!parsedId) {
+      Alert.alert("Erro", "ID inválido");
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await deleteProduct(parsedId);
+      setIsDeleteModalVisible(false);
+      router.back();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Falha ao excluir produto";
+      Alert.alert("Erro", message);
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   const submitLabel = isEditing ? "Salvar" : "Criar";
 
   return (
-    <StackFormWrapper title={title}>
+    <StackFormWrapper
+      title={title}
+      headerRight={
+        isEditing ? <DeleteButton onPress={() => setIsDeleteModalVisible(true)} /> : null
+      }
+    >
+      <ConfirmationModal
+        visible={isDeleteModalVisible}
+        title="Excluir produto?"
+        message="Essa ação é permanente e vai remover o produto do cadastro."
+        confirmLabel="Excluir"
+        confirmTone="danger"
+        isConfirming={isDeleting}
+        onConfirm={handleDeleteProduct}
+        onCancel={() => setIsDeleteModalVisible(false)}
+      />
+
       {isLoadingProduct ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator color={theme.colors.tint} />
@@ -402,7 +441,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       backgroundColor: colors.surface,
       borderWidth: 2,
       borderStyle: "dashed",
-      borderColor: colors.border,
+      borderColor: colors.textMuted,
       alignItems: "center",
       justifyContent: "center",
       gap: 8,
@@ -415,7 +454,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     addImageText: {
       color: colors.tint,
       fontSize: 14,
-      fontWeight: 500,
+      fontWeight: 600,
       marginTop: 4,
     },
     imageActions: {

@@ -10,7 +10,9 @@ import { ExpenseService } from "@/features/expenses/expense-service";
 import { useExpenseStore } from "@/features/expenses/expense-store";
 import { useMaterialStore } from "@/features/materials/material-store";
 import type { Material } from "@/features/materials/material.types";
+import { ConfirmationModal } from "@/shared/components/confirmation-modal";
 import { DatePickerField } from "@/shared/components/date-picker-field";
+import { DeleteButton } from "@/shared/components/delete-button";
 import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
@@ -53,10 +55,12 @@ export default function ExpensesForm() {
   const theme = useTheme();
   const styles = useStyles(createStyles);
 
-  const { createExpense, updateExpense } = useExpenseStore();
+  const { createExpense, updateExpense, deleteExpense } = useExpenseStore();
   const { materials, loadMaterials } = useMaterialStore();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [selectedMaterials, setSelectedMaterials] = useState<Record<number, SelectedMaterialState>>(
     {},
   );
@@ -301,6 +305,25 @@ export default function ExpensesForm() {
     }
   }
 
+  async function handleDeleteExpense() {
+    if (!parsedId) {
+      Alert.alert("Erro", "ID inválido");
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await deleteExpense(parsedId);
+      setIsDeleteModalVisible(false);
+      router.back();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Falha ao excluir despesa";
+      Alert.alert("Erro", message);
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   const submitLabel = isEditing ? "Salvar" : "Criar";
 
   const materialsList = selectedEntries.map(([materialId, data]) => {
@@ -322,7 +345,23 @@ export default function ExpensesForm() {
   const availableMaterials = materialsSorted.filter((material) => !selectedMaterials[material.id]);
 
   return (
-    <StackFormWrapper title={title}>
+    <StackFormWrapper
+      title={title}
+      headerRight={
+        isEditing ? <DeleteButton onPress={() => setIsDeleteModalVisible(true)} /> : null
+      }
+    >
+      <ConfirmationModal
+        visible={isDeleteModalVisible}
+        title="Excluir despesa?"
+        message="Essa ação é permanente e vai remover a despesa do cadastro."
+        confirmLabel="Excluir"
+        confirmTone="danger"
+        isConfirming={isDeleting}
+        onConfirm={handleDeleteExpense}
+        onCancel={() => setIsDeleteModalVisible(false)}
+      />
+
       {isLoading ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator color={theme.colors.tint} />

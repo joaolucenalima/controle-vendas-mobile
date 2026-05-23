@@ -13,7 +13,15 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export function StackFormWrapper({ title, children }: { title: string; children: ReactNode }) {
+export function StackFormWrapper({
+  title,
+  children,
+  headerRight,
+}: {
+  title: string;
+  headerRight?: ReactNode;
+  children: ReactNode;
+}) {
   const router = useRouter();
   const theme = useTheme();
   const styles = useStyles(createStyles);
@@ -35,6 +43,7 @@ export function StackFormWrapper({ title, children }: { title: string; children:
               <IconSymbol name="chevron.left" size={22} color={theme.colors.text} />
             </Pressable>
           ),
+          headerRight: () => headerRight || null,
         }}
       />
 
