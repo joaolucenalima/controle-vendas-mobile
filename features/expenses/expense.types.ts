@@ -6,22 +6,21 @@ export interface CreateExpenseMaterialDTO {
 }
 
 export interface CreateExpenseDTO {
-  title: string;
   amount_in_cents: number;
   notes?: string;
   materials: CreateExpenseMaterialDTO[];
+  created_at?: string;
 }
 
 export interface UpdateExpenseDTO {
-  title?: string;
   amount_in_cents?: number;
   notes?: string | null;
   materials?: CreateExpenseMaterialDTO[];
+  created_at?: string;
 }
 
 export interface Expense {
   id: number;
-  title: string;
   amount_in_cents: number;
   notes: string | null;
   created_at: string;

@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useExpenseStore } from "@/features/expenses/expense-store";
@@ -25,10 +25,6 @@ export default function ExpensesScreen() {
 
   const hasExpenses = expenses.length > 0;
 
-  const sorted = useMemo(() => {
-    return [...expenses].sort((a, b) => a.title.localeCompare(b.title));
-  }, [expenses]);
-
   function handleCreate() {
     router.push("/expenses-form");
   }
@@ -44,7 +40,6 @@ export default function ExpensesScreen() {
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{item.title}</Text>
         <Text style={styles.cardPrice}>{formatCentsToCurrency(item.amount_in_cents)}</Text>
       </View>
       {item.notes ? <Text style={styles.cardDescription}>{item.notes}</Text> : null}
@@ -61,7 +56,7 @@ export default function ExpensesScreen() {
 
         {hasExpenses ? (
           <FlatList
-            data={sorted}
+            data={expenses}
             keyExtractor={(item) => String(item.id)}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}

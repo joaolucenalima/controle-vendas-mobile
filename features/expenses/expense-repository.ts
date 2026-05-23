@@ -1,11 +1,11 @@
 import { db } from "@/database/sqlite";
 import {
-    CreateExpenseDTO,
-    CreateExpenseMaterialDTO,
-    Expense,
-    ExpenseMaterial,
-    ExpenseWithMaterials,
-    UpdateExpenseDTO,
+  CreateExpenseDTO,
+  CreateExpenseMaterialDTO,
+  Expense,
+  ExpenseMaterial,
+  ExpenseWithMaterials,
+  UpdateExpenseDTO,
 } from "./expense.types";
 
 type DatabaseLike = Pick<
@@ -50,12 +50,12 @@ async function findExpenseWithMaterialsById(
 
 async function insertExpenseRow(
   database: DatabaseLike,
-  { title, amount_in_cents, notes }: Omit<CreateExpenseDTO, "materials">,
+  { amount_in_cents, notes }: Omit<CreateExpenseDTO, "materials">,
 ): Promise<number> {
   const createdAt = new Date().toISOString();
   const result = await database.runAsync(
-    "INSERT INTO expenses (title, amount_in_cents, notes, created_at) VALUES (?, ?, ?, ?)",
-    [title, amount_in_cents, notes ?? null, createdAt],
+    "INSERT INTO expenses (amount_in_cents, notes, created_at) VALUES (?, ?, ?, ?)",
+    [amount_in_cents, notes ?? null, createdAt],
   );
 
   return result.lastInsertRowId;
@@ -97,11 +97,6 @@ async function updateExpenseRow(
 ): Promise<Expense> {
   const updates: string[] = [];
   const params: (string | number | null)[] = [];
-
-  if (data.title !== undefined) {
-    updates.push("title = ?");
-    params.push(data.title);
-  }
 
   if (data.amount_in_cents !== undefined) {
     updates.push("amount_in_cents = ?");

@@ -11,7 +11,7 @@ import {
 } from "@/shared/utils/format-date-filter";
 
 type DatePickerFieldProps = {
-  label: string;
+  label?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -62,7 +62,7 @@ export function DatePickerField({
 
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+      {label && <Text style={styles.label}>{label}</Text>}
 
       <Pressable
         onPress={openPicker}
@@ -191,3 +191,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontSize: 15,
     },
   });
+

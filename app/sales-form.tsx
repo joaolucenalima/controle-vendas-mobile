@@ -67,15 +67,12 @@ export default function SalesForm() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [existingSale, setExistingSale] = useState<Sale | null>(null);
-  const [selectedProducts, setSelectedProducts] = useState<Record<number, SelectedProductState>>(
-    {},
+  const [selectedProducts, setSelectedProducts] = useState(
+    () => new Map<number, SelectedProductState>(),
   );
   const [discountInCents, setDiscountInCents] = useState<number | null>(null);
   const [saleDate, setSaleDate] = useState(getTodayDateFilterKey);
   const [pickerSheet, setPickerSheet] = useState<ProductPickerSheetState | null>(null);
-
-  const isEditing = !!id;
-  const title = isEditing ? "Editar venda" : "Nova venda";
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleFormSchema),
@@ -90,14 +87,19 @@ export default function SalesForm() {
     return numeric;
   }, [id]);
 
+  const isEditing = parsedId !== null;
+  const title = isEditing ? "Editar venda" : "Nova venda";
+
   const productsById = useMemo(
     () => new Map(products.map((product) => [product.id, product])),
     [products],
   );
 
-  const productsSorted = useMemo(() => {
-    return [...products].sort((a, b) => a.name.localeCompare(b.name));
-  }, [products]);
+  const selectedProductIds = useMemo(() => new Set(selectedProducts.keys()), [selectedProducts]);
+
+  const availableProducts = useMemo(() => {
+    return products.filter((product) => !selectedProductIds.has(product.id));
+  }, [products, selectedProductIds]);
 
   useEffect(() => {
     loadProducts();
@@ -122,15 +124,15 @@ export default function SalesForm() {
         setSaleDate(soldAtIsoToDateFilterKey(loaded.sold_at));
         form.reset({ notes: loaded.notes ?? "" });
 
-        const nextSelected = loaded.items.reduce<Record<number, SelectedProductState>>(
+        const nextSelected = loaded.items.reduce<Map<number, SelectedProductState>>(
           (accumulator, item) => {
-            accumulator[item.product_id] = {
+            accumulator.set(item.product_id, {
               quantity: item.quantity,
               unitPriceInCents: item.unit_price_in_cents,
-            };
+            });
             return accumulator;
           },
-          {},
+          new Map<number, SelectedProductState>(),
         );
         setSelectedProducts(nextSelected);
       })
@@ -150,13 +152,7 @@ export default function SalesForm() {
     };
   }, [form, isEditing, parsedId, router]);
 
-  const selectedEntries = useMemo(
-    () =>
-      Object.entries(selectedProducts).map(
-        ([productId, data]) => [Number(productId), data] as const,
-      ),
-    [selectedProducts],
-  );
+  const selectedEntries = useMemo(() => Array.from(selectedProducts.entries()), [selectedProducts]);
 
   const subtotalInCents = useMemo(() => {
     return selectedEntries.reduce(
@@ -197,18 +193,18 @@ export default function SalesForm() {
     if (!pickerSheet || pickerSheet.pendingIds.length === 0) return;
 
     setSelectedProducts((current) => {
-      const next = { ...current };
+      const next = new Map(current);
 
       for (const productId of pickerSheet.pendingIds) {
-        if (next[productId]) continue;
+        if (next.has(productId)) continue;
 
         const product = productsById.get(productId);
         if (!product) continue;
 
-        next[productId] = {
+        next.set(productId, {
           quantity: 1,
           unitPriceInCents: product.price_in_cents,
-        };
+        });
       }
 
       return next;
@@ -219,30 +215,28 @@ export default function SalesForm() {
 
   function removeProduct(productId: number) {
     setSelectedProducts((current) => {
-      if (!current[productId]) return current;
-      const next = { ...current };
-      delete next[productId];
+      if (!current.has(productId)) return current;
+      const next = new Map(current);
+      next.delete(productId);
       return next;
     });
   }
 
   function setProductQuantity(productId: number, quantity: number) {
     if (quantity < 1) {
-      removeProduct(productId);
       return;
     }
 
     setSelectedProducts((current) => {
-      const existing = current[productId];
+      const existing = current.get(productId);
       if (!existing) return current;
 
-      return {
-        ...current,
-        [productId]: {
-          ...existing,
-          quantity,
-        },
-      };
+      const next = new Map(current);
+      next.set(productId, {
+        ...existing,
+        quantity,
+      });
+      return next;
     });
   }
 
@@ -315,7 +309,6 @@ export default function SalesForm() {
           <View>
             <Text style={styles.sectionTitle}>Data da venda</Text>
             <DatePickerField
-              label="Data"
               value={saleDate}
               onChange={setSaleDate}
               placeholder="Selecionar data"
@@ -453,9 +446,7 @@ export default function SalesForm() {
 
       <SaleProductPickerSheet
         visible={pickerSheet !== null}
-        products={productsSorted.filter(
-          (product) => !Object.keys(selectedProducts).find((id) => Number(id) === product.id),
-        )}
+        products={availableProducts}
         pendingIds={pickerSheet?.pendingIds ?? []}
         search={pickerSheet?.search ?? ""}
         onSearchChange={(search) =>
@@ -547,13 +538,11 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     },
     selectedList: {
       gap: 8,
-      marginBottom: 12,
     },
     emptyProductsText: {
       color: colors.textMuted,
       fontFamily: fonts.sans,
       fontSize: 14,
-      marginBottom: 12,
     },
     addProductsButton: {
       flexDirection: "row",
@@ -564,6 +553,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       borderWidth: 1,
       borderColor: colors.tint,
       paddingVertical: 12,
+      marginTop: 12,
     },
     addProductsPressed: {
       opacity: 0.85,
@@ -610,3 +600,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontWeight: "600",
     },
   });
+

@@ -51,17 +51,6 @@ export function ExpenseSelectedMaterialItem({
 
       <View style={styles.materialInfo}>
         <Text style={styles.materialName}>{material.name}</Text>
-        {material.price_in_cents !== null ? (
-          <Text style={styles.materialBasePrice}>
-            Base: {formatCentsToCurrency(material.price_in_cents)}
-          </Text>
-        ) : (
-          <Text style={styles.materialBasePriceMuted}>Sem preço cadastrado</Text>
-        )}
-      </View>
-
-      <View style={styles.rightArea}>
-        <QuantityInput value={quantity} onChange={onQuantityChange} />
 
         <PriceInput
           value={String(unitPriceInCents)}
@@ -69,6 +58,10 @@ export function ExpenseSelectedMaterialItem({
           placeholder="R$ 0,00"
           style={styles.unitPriceInput}
         />
+      </View>
+
+      <View style={styles.rightArea}>
+        <QuantityInput value={quantity} onChange={onQuantityChange} />
 
         <Text style={styles.lineTotal}>{formatCentsToCurrency(lineTotal)}</Text>
       </View>
@@ -90,7 +83,8 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     },
     materialInfo: {
       flex: 1,
-      gap: 6,
+      gap: 8,
+      justifyContent: "space-between",
     },
     materialName: {
       fontSize: 15,
@@ -120,8 +114,8 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       gap: 8,
     },
     unitPriceInput: {
-      minWidth: 112,
-      height: 32,
+      width: 120,
+      minHeight: 32,
       borderRadius: 10,
       borderWidth: 1,
       borderColor: colors.border,
@@ -131,7 +125,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       color: colors.text,
       fontFamily: fonts.rounded,
       fontWeight: "600",
-      fontSize: 14,
+      fontSize: 12,
     },
     lineTotal: {
       fontSize: 14,
@@ -142,3 +136,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       textAlign: "right",
     },
   });
+

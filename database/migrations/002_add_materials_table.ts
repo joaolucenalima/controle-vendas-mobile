@@ -32,6 +32,7 @@ export const add_materials_table: Migration = {
       );
 
       ALTER TABLE expenses REMOVE COLUMN category;
+      ALTER TABLE expenses REMOVE COLUMN title;
     `);
   },
 };
