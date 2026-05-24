@@ -11,6 +11,7 @@ import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
+import { formatDateToDisplay } from "@/shared/utils/format-date-filter";
 
 export default function ExpensesScreen() {
   const router = useRouter();
@@ -41,6 +42,8 @@ export default function ExpensesScreen() {
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
       <View style={styles.cardHeader}>
+        <ThemedText style={styles.cardTitle}>{formatDateToDisplay(item.created_at)}</ThemedText>
+
         <ThemedText style={styles.cardPrice}>
           {formatCentsToCurrency(item.amount_in_cents)}
         </ThemedText>

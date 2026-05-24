@@ -54,7 +54,7 @@ async function insertExpenseRow(
 ): Promise<number> {
   const createdAt = new Date().toISOString();
   const result = await database.runAsync(
-    "INSERT INTO expenses (amount_in_cents, notes, created_at) VALUES (?, ?, ?, ?)",
+    "INSERT INTO expenses (amount_in_cents, notes, created_at) VALUES (?, ?, ?)",
     [amount_in_cents, notes ?? null, createdAt],
   );
 

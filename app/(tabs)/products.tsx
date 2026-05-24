@@ -69,7 +69,7 @@ export default function ProductsScreen() {
             keyExtractor={(item) => String(item.id)}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
-            columnWrapperStyle={{ gap: 20, marginBottom: 16 }}
+            columnWrapperStyle={{ marginBottom: 20, justifyContent: "space-between" }}
             numColumns={2}
           />
         ) : (
@@ -126,7 +126,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.sans,
     },
     card: {
-      flex: 1,
+      width: "47%",
       borderRadius: 18,
       borderWidth: 1,
       padding: 12,

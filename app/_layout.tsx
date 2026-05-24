@@ -53,6 +53,7 @@ export default function RootLayout() {
         <Stack.Screen name="materials-form" options={{ headerShown: true }} />
         <Stack.Screen name="expenses-form" options={{ headerShown: true }} />
         <Stack.Screen name="sales-form" options={{ headerShown: true }} />
+        <Stack.Screen name="settings" options={{ headerShown: true, title: "Configurações" }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

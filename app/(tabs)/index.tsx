@@ -143,7 +143,19 @@ export default function HomeScreen() {
     <TabsScreenLayout>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          <ThemedText style={styles.title}>Painel Principal</ThemedText>
+          <View style={styles.heroHeader}>
+            <ThemedText style={styles.title}>Painel Principal</ThemedText>
+            {__DEV__ ? (
+              <Pressable
+                onPress={() => router.push("/settings" as never)}
+                accessibilityRole="button"
+                accessibilityLabel="Abrir configurações de desenvolvimento"
+                style={({ pressed }) => [styles.settingsButton, pressed && styles.cardPressed]}
+              >
+                <IconSymbol name="gearshape.fill" size={20} color={theme.colors.text} />
+              </Pressable>
+            ) : null}
+          </View>
           <ThemedText style={styles.todayLabel}>{todayLabel}</ThemedText>
         </View>
 
@@ -294,12 +306,28 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
     hero: {
       gap: 8,
     },
+    heroHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
+    },
     title: {
       fontSize: 28,
       fontWeight: "bold",
       lineHeight: 32,
       color: colors.text,
       fontFamily: fonts.rounded,
+    },
+    settingsButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceElevated,
     },
     todayLabel: {
       fontSize: 12,

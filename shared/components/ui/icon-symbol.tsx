@@ -31,6 +31,7 @@ const MAPPING = {
   "chevron.left": "chevron-left",
   "chevron.down": "expand-more",
   "camera.fill": "camera-alt",
+  "gearshape.fill": "settings",
 } as IconMapping;
 
 /**

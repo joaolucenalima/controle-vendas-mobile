@@ -31,8 +31,8 @@ export const add_materials_table: Migration = {
         FOREIGN KEY (material_id) REFERENCES materials(id) ON DELETE CASCADE
       );
 
-      ALTER TABLE expenses REMOVE COLUMN category;
-      ALTER TABLE expenses REMOVE COLUMN title;
+      ALTER TABLE expenses DROP COLUMN category;
+      ALTER TABLE expenses DROP COLUMN title;
     `);
   },
 };

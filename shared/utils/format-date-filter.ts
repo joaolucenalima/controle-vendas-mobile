@@ -11,11 +11,7 @@ export function parseDateFilterKey(value: string): Date | null {
   const [year, month, day] = value.split("-").map(Number);
   const date = new Date(year, month - 1, day);
 
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
     return null;
   }
 
@@ -56,3 +52,12 @@ export function formatDateFilterDisplay(value: string): string {
     year: "numeric",
   }).format(parsed);
 }
+
+export function formatDateToDisplay(value: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(value));
+}
+

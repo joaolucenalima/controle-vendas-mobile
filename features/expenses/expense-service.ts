@@ -30,14 +30,12 @@ const expenseMaterialSchema = z.object({
 });
 
 const createExpenseSchema = z.object({
-  title: z.string().trim().min(1, "Título obrigatório"),
   amount_in_cents: z.number().int("Valor inválido").positive("Valor inválido"),
   notes: z.string().optional(),
   materials: z.array(expenseMaterialSchema).min(1, "Adicione ao menos um material"),
 });
 
 const updateExpenseSchema = z.object({
-  title: z.string().trim().min(1, "Título obrigatório").optional(),
   amount_in_cents: z.number().int("Valor inválido").positive("Valor inválido").optional(),
   notes: z.string().nullable().optional(),
   materials: z.array(expenseMaterialSchema).min(1, "Adicione ao menos um material").optional(),
@@ -64,7 +62,6 @@ export const ExpenseService = {
       fallbackMessage: "Dados inválidos",
       issueMessage: (issue) => {
         const field = issue.path[0];
-        if (field === "title") return "Título obrigatório";
         if (field === "amount_in_cents") return "Valor inválido";
         if (field === "materials") return "Adicione ao menos um material";
         return undefined;
@@ -79,7 +76,6 @@ export const ExpenseService = {
       fallbackMessage: "Dados inválidos",
       issueMessage: (issue) => {
         const field = issue.path[0];
-        if (field === "title") return "Título obrigatório";
         if (field === "amount_in_cents") return "Valor inválido";
         if (field === "materials") return "Adicione ao menos um material";
         return undefined;
