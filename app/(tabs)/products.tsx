@@ -108,11 +108,11 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       flex: 1,
       paddingHorizontal: 20,
       paddingTop: 12,
-      paddingBottom: 20,
+      paddingBottom: 24,
     },
     header: {
-      gap: 6,
-      marginBottom: 16,
+      gap: 8,
+      marginBottom: 12,
     },
     title: {
       fontSize: 26,
@@ -132,7 +132,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       padding: 12,
       backgroundColor: colors.surfaceElevated,
       borderColor: colors.border,
-      gap: 4,
+      gap: 8,
     },
     cardPressed: {
       opacity: 0.82,
@@ -173,7 +173,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontWeight: 600,
       color: colors.text,
       fontFamily: fonts.rounded,
-      marginTop: 8,
     },
     cardPrice: {
       fontSize: 14,
@@ -186,7 +185,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       justifyContent: "center",
       alignItems: "center",
       paddingHorizontal: 20,
-      gap: 10,
+      gap: 12,
     },
     emptyTitle: {
       fontSize: 18,
@@ -202,7 +201,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.sans,
     },
     emptyButton: {
-      marginTop: 8,
+      marginTop: 12,
       paddingVertical: 12,
       paddingHorizontal: 20,
       borderRadius: 16,
@@ -220,7 +219,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     fab: {
       position: "absolute",
       right: 20,
-      bottom: 0,
+      bottom: 24,
       width: 54,
       height: 54,
       borderRadius: 27,

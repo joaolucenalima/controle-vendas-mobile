@@ -369,7 +369,7 @@ export default function ExpensesForm() {
         </View>
       ) : (
         <>
-          <View>
+          <View style={styles.section}>
             <ThemedText style={styles.label}>Data</ThemedText>
             <DatePickerField
               value={expenseDate}
@@ -378,7 +378,7 @@ export default function ExpensesForm() {
             />
           </View>
 
-          <View>
+          <View style={styles.section}>
             <ThemedText style={styles.label}>Materiais</ThemedText>
 
             {selectedCount === 0 ? (
@@ -421,7 +421,7 @@ export default function ExpensesForm() {
             </View>
           </View>
 
-          <View>
+          <View style={styles.section}>
             <ThemedText style={styles.label}>Notas</ThemedText>
             <Controller
               control={form.control}
@@ -482,12 +482,13 @@ export default function ExpensesForm() {
 
 const createStyles = ({ colors, fonts }: StylesProps) =>
   StyleSheet.create({
+    section: {
+      gap: 8,
+    },
     label: {
-      fontSize: 18,
-      color: colors.text,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-      marginBottom: 12,
+      fontSize: 14,
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
     },
     addMaterialsButton: {
       flexDirection: "row",
@@ -510,7 +511,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontWeight: "600",
     },
     selectedList: {
-      gap: 10,
+      gap: 8,
     },
     emptyMaterialsState: {
       alignItems: "center",
@@ -567,7 +568,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       paddingVertical: 12,
       color: colors.text,
       fontFamily: fonts.sans,
-      fontSize: 14,
+      fontSize: 16,
     },
     textArea: {
       minHeight: 96,

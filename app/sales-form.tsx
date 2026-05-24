@@ -345,7 +345,7 @@ export default function SalesForm() {
         </View>
       ) : (
         <>
-          <View>
+          <View style={styles.section}>
             <ThemedText style={styles.sectionTitle}>Data da venda</ThemedText>
             <DatePickerField
               value={saleDate}
@@ -354,7 +354,7 @@ export default function SalesForm() {
             />
           </View>
 
-          <View>
+          <View style={styles.section}>
             <ThemedText style={styles.sectionTitle}>Produtos selecionados</ThemedText>
 
             {selectedCount === 0 ? (
@@ -442,7 +442,7 @@ export default function SalesForm() {
             </View>
           </View>
 
-          <View>
+          <View style={styles.section}>
             <ThemedText style={styles.sectionTitle}>Observações</ThemedText>
             <Controller
               control={form.control}
@@ -505,6 +505,9 @@ export default function SalesForm() {
 
 const createStyles = ({ colors, fonts }: StylesProps) =>
   StyleSheet.create({
+    section: {
+      gap: 8,
+    },
     loadingWrap: {
       alignItems: "center",
       paddingVertical: 40,
@@ -573,11 +576,9 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontSize: 16,
     },
     sectionTitle: {
-      fontSize: 18,
-      color: colors.text,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-      marginBottom: 12,
+      fontSize: 14,
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
     },
     selectedList: {
       gap: 8,
@@ -617,7 +618,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       paddingVertical: 12,
       color: colors.text,
       fontFamily: fonts.sans,
-      fontSize: 14,
+      fontSize: 16,
     },
     inputError: {
       borderColor: colors.error,
@@ -625,9 +626,10 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     errorText: {
       color: colors.error,
       fontFamily: fonts.sans,
-      fontSize: 12,
+      fontSize: 13,
     },
     submitButton: {
+      marginTop: 10,
       borderRadius: 16,
       paddingVertical: 14,
       alignItems: "center",

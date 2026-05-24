@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import {
-  FlatList,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
+    FlatList,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    Pressable,
+    StyleSheet,
+    TextInput,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -62,7 +62,7 @@ export function MaterialPickerSheet({
           style={styles.keyboardAvoidingView}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}> 
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
             <View style={styles.handle} />
 
             <View style={styles.header}>
@@ -114,7 +114,9 @@ export function MaterialPickerSheet({
                     pressed && styles.cardPressed,
                   ]}
                 >
-                  <View style={[styles.checkbox, pendingSet.has(item.id) && styles.checkboxSelected]}>
+                  <View
+                    style={[styles.checkbox, pendingSet.has(item.id) && styles.checkboxSelected]}
+                  >
                     {pendingSet.has(item.id) ? (
                       <ThemedText style={styles.checkboxLabel}>✓</ThemedText>
                     ) : null}

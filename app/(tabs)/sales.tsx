@@ -182,15 +182,15 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     listContent: {
       paddingHorizontal: 20,
       paddingTop: 12,
-      paddingBottom: 120,
+      paddingBottom: 112,
       gap: 12,
     },
     headerWrap: {
       gap: 12,
     },
     header: {
-      gap: 6,
-      marginBottom: 4,
+      gap: 8,
+      marginBottom: 12,
     },
     title: {
       fontSize: 26,
@@ -274,8 +274,8 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     },
     emptyState: {
       alignItems: "center",
-      paddingVertical: 40,
-      gap: 10,
+      paddingVertical: 32,
+      gap: 12,
     },
     emptyTitle: {
       fontSize: 18,
@@ -293,7 +293,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     fab: {
       position: "absolute",
       right: 20,
-      bottom: 30,
+      bottom: 24,
       width: 54,
       height: 54,
       borderRadius: 27,

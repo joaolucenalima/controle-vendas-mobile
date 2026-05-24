@@ -363,7 +363,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       borderColor: colors.error,
     },
     errorText: {
-      fontSize: 12,
+      fontSize: 13,
       color: colors.error,
       fontFamily: fonts.sans,
     },
@@ -385,7 +385,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.sans,
     },
     submitButton: {
-      marginTop: 8,
+      marginTop: 10,
       borderRadius: 16,
       paddingVertical: 14,
       alignItems: "center",
