@@ -10,6 +10,7 @@ import { z } from "zod";
 import { ProductService } from "@/features/products/product-service";
 import { useProductStore } from "@/features/products/product-store";
 import type { Product } from "@/features/products/product.types";
+import { Button } from "@/shared/components/button";
 import { ConfirmationModal } from "@/shared/components/confirmation-modal";
 import { DeleteButton } from "@/shared/components/delete-button";
 import { PriceInput } from "@/shared/components/price-input";
@@ -367,21 +368,13 @@ export default function ProductsForm() {
             />
           </View>
 
-          <Pressable
+          <Button
+            label={submitLabel}
             onPress={form.handleSubmit(onSubmit)}
+            loading={isSubmitting}
             disabled={isSubmitting}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.submitButton,
-              (pressed || isSubmitting) && styles.submitButtonPressed,
-            ]}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color={theme.colors.background} />
-            ) : (
-              <ThemedText style={styles.submitButtonText}>{submitLabel}</ThemedText>
-            )}
-          </Pressable>
+            style={styles.submitButton}
+          />
         </>
       )}
     </StackFormWrapper>
@@ -500,19 +493,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     },
     submitButton: {
       marginTop: 10,
-      borderRadius: 16,
-      paddingVertical: 14,
-      alignItems: "center",
-      backgroundColor: colors.tint,
-    },
-    submitButtonPressed: {
-      opacity: 0.85,
-    },
-    submitButtonText: {
-      color: colors.background,
-      fontSize: 16,
-      fontWeight: "600",
-      fontFamily: fonts.rounded,
     },
     loadingWrap: {
       paddingVertical: 40,

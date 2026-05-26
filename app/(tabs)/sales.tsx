@@ -6,6 +6,7 @@ import { Alert, FlatList, Pressable, StyleSheet, View } from "react-native";
 import { useProductStore } from "@/features/products/product-store";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
+import { Button } from "@/shared/components/button";
 import { DatePickerField } from "@/shared/components/date-picker-field";
 import ThemedText from "@/shared/components/themed-text";
 import { IconSymbol } from "@/shared/components/ui/icon-symbol";
@@ -122,21 +123,23 @@ export default function SalesScreen() {
         </View>
 
         <View style={styles.filterActions}>
-          <Pressable
+          <Button
+            label="Filtrar"
             onPress={handleApplyFilters}
-            accessibilityRole="button"
-            style={({ pressed }) => [styles.filterButton, pressed && styles.filterButtonPressed]}
-          >
-            <ThemedText style={styles.filterButtonText}>Filtrar</ThemedText>
-          </Pressable>
+            size="sm"
+            fullWidth={false}
+            flex
+          />
 
-          <Pressable
+          <Button
+            label="Limpar"
             onPress={handleClearFilters}
-            accessibilityRole="button"
-            style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
-          >
-            <ThemedText style={styles.clearButtonText}>Limpar</ThemedText>
-          </Pressable>
+            variant="secondary"
+            size="sm"
+            fullWidth={false}
+            flex
+            bordered={false}
+          />
         </View>
       </View>
 
@@ -224,38 +227,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     filterActions: {
       flexDirection: "row",
       gap: 10,
-    },
-    filterButton: {
-      flex: 1,
-      borderRadius: 14,
-      paddingVertical: 12,
-      alignItems: "center",
-      backgroundColor: colors.tint,
-    },
-    filterButtonPressed: {
-      opacity: 0.85,
-    },
-    filterButtonText: {
-      color: colors.background,
-      fontSize: 14,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-    },
-    clearButton: {
-      flex: 1,
-      borderRadius: 14,
-      paddingVertical: 12,
-      alignItems: "center",
-      backgroundColor: colors.surface,
-    },
-    clearButtonPressed: {
-      opacity: 0.85,
-    },
-    clearButtonText: {
-      color: colors.text,
-      fontSize: 14,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
     },
     summaryRow: {
       flexDirection: "row",

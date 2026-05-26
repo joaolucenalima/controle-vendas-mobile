@@ -10,6 +10,7 @@ import { ExpenseService } from "@/features/expenses/expense-service";
 import { useExpenseStore } from "@/features/expenses/expense-store";
 import { useMaterialStore } from "@/features/materials/material-store";
 import type { Material } from "@/features/materials/material.types";
+import { Button } from "@/shared/components/button";
 import { ConfirmationModal } from "@/shared/components/confirmation-modal";
 import { DatePickerField } from "@/shared/components/date-picker-field";
 import { DeleteButton } from "@/shared/components/delete-button";
@@ -446,21 +447,13 @@ export default function ExpensesForm() {
             />
           </View>
 
-          <Pressable
+          <Button
+            label={submitLabel}
             onPress={form.handleSubmit(onSubmit)}
+            loading={isSubmitting}
             disabled={isSubmitting || selectedCount === 0}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.submitButton,
-              (pressed || isSubmitting || selectedCount === 0) && styles.submitButtonPressed,
-            ]}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color={theme.colors.background} />
-            ) : (
-              <ThemedText style={styles.submitButtonText}>{submitLabel}</ThemedText>
-            )}
-          </Pressable>
+            style={styles.submitButton}
+          />
         </>
       )}
 
@@ -583,19 +576,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     },
     submitButton: {
       marginTop: 10,
-      borderRadius: 16,
-      paddingVertical: 14,
-      alignItems: "center",
-      backgroundColor: colors.tint,
-    },
-    submitButtonPressed: {
-      opacity: 0.85,
-    },
-    submitButtonText: {
-      color: colors.background,
-      fontSize: 16,
-      fontWeight: "600",
-      fontFamily: fonts.rounded,
     },
     loadingWrap: {
       paddingVertical: 40,

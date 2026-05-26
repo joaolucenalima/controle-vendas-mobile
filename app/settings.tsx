@@ -1,16 +1,15 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Alert, DevSettings, Pressable, StyleSheet, View } from "react-native";
+import { Alert, DevSettings, StyleSheet, View } from "react-native";
 
 import { resetDatabase } from "@/database/reset-database";
+import { Button } from "@/shared/components/button";
 import ThemedText from "@/shared/components/themed-text";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
-import { useTheme } from "@/shared/hooks/use-theme";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const theme = useTheme();
   const styles = useStyles(createStyles);
   const [isResetting, setIsResetting] = useState(false);
 
@@ -47,13 +46,13 @@ export default function SettingsScreen() {
           <ThemedText style={styles.unavailableText}>
             Esta página é exclusiva para ambiente de desenvolvimento.
           </ThemedText>
-          <Pressable
+          <Button
+            label="Voltar"
             onPress={() => router.back()}
-            accessibilityRole="button"
-            style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
-          >
-            <ThemedText style={styles.secondaryButtonText}>Voltar</ThemedText>
-          </Pressable>
+            variant="secondary"
+            size="md"
+            fullWidth={false}
+          />
         </View>
       </StackFormWrapper>
     );
@@ -67,21 +66,15 @@ export default function SettingsScreen() {
           Use este atalho para resetar o SQLite local durante testes.
         </ThemedText>
 
-        <Pressable
+        <Button
+          label="Limpar banco de dados"
           onPress={handleResetPress}
+          variant="danger"
+          size="md"
+          loading={isResetting}
           disabled={isResetting}
-          accessibilityRole="button"
-          style={({ pressed }) => [
-            styles.dangerButton,
-            (pressed || isResetting) && styles.buttonPressed,
-          ]}
-        >
-          {isResetting ? (
-            <ActivityIndicator color={theme.colors.background} />
-          ) : (
-            <ThemedText style={styles.dangerButtonText}>Limpar banco de dados</ThemedText>
-          )}
-        </Pressable>
+          style={styles.dangerButton}
+        />
       </View>
     </StackFormWrapper>
   );
@@ -109,17 +102,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       color: colors.textMuted,
     },
     dangerButton: {
-      borderRadius: 14,
-      paddingVertical: 12,
-      alignItems: "center",
-      backgroundColor: colors.error,
       marginTop: 4,
-    },
-    dangerButtonText: {
-      color: colors.background,
-      fontSize: 14,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
     },
     unavailableCard: {
       borderRadius: 18,
@@ -140,23 +123,5 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontSize: 14,
       fontFamily: fonts.sans,
       color: colors.textMuted,
-    },
-    secondaryButton: {
-      borderRadius: 14,
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      alignItems: "center",
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    secondaryButtonText: {
-      color: colors.text,
-      fontSize: 14,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-    },
-    buttonPressed: {
-      opacity: 0.85,
     },
   });

@@ -1,5 +1,6 @@
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 
+import { Button } from "@/shared/components/button";
 import ThemedText from "@/shared/components/themed-text";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 
@@ -38,37 +39,27 @@ export function ConfirmationModal({
           <ThemedText style={styles.message}>{message}</ThemedText>
 
           <View style={styles.actions}>
-            <Pressable
+            <Button
+              label={cancelLabel}
               onPress={onCancel}
-              accessibilityRole="button"
+              variant="secondary"
+              size="md"
+              fullWidth={false}
+              flex
               disabled={isConfirming}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                (pressed || isConfirming) && styles.secondaryButtonPressed,
-              ]}
-            >
-              <ThemedText style={styles.secondaryButtonText}>{cancelLabel}</ThemedText>
-            </Pressable>
+            />
 
-            <Pressable
+            <Button
+              label={confirmLabel}
               onPress={onConfirm}
-              accessibilityRole="button"
+              variant={confirmTone === "danger" ? "danger" : "primary"}
+              size="md"
+              fullWidth={false}
+              flex
+              loading={isConfirming}
+              loadingLabel="Confirmando..."
               disabled={isConfirming}
-              style={({ pressed }) => [
-                styles.primaryButton,
-                confirmTone === "danger" && styles.dangerButton,
-                (pressed || isConfirming) && styles.primaryButtonPressed,
-              ]}
-            >
-              <ThemedText
-                style={[
-                  styles.primaryButtonText,
-                  confirmTone === "danger" && styles.dangerButtonText,
-                ]}
-              >
-                {isConfirming ? "Confirmando..." : confirmLabel}
-              </ThemedText>
-            </Pressable>
+            />
           </View>
         </View>
       </View>
@@ -109,45 +100,5 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       flexDirection: "row",
       gap: 10,
       marginTop: 6,
-    },
-    secondaryButton: {
-      flex: 1,
-      paddingVertical: 12,
-      borderRadius: 14,
-      alignItems: "center",
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    secondaryButtonPressed: {
-      opacity: 0.86,
-    },
-    secondaryButtonText: {
-      color: colors.text,
-      fontFamily: fonts.rounded,
-      fontSize: 15,
-      fontWeight: "600",
-    },
-    primaryButton: {
-      flex: 1,
-      paddingVertical: 12,
-      borderRadius: 14,
-      alignItems: "center",
-      backgroundColor: colors.tint,
-    },
-    dangerButton: {
-      backgroundColor: colors.red,
-    },
-    primaryButtonPressed: {
-      opacity: 0.86,
-    },
-    primaryButtonText: {
-      color: colors.background,
-      fontFamily: fonts.rounded,
-      fontSize: 15,
-      fontWeight: "600",
-    },
-    dangerButtonText: {
-      color: colors.background,
     },
   });

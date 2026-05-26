@@ -119,22 +119,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       color: colors.textMuted,
       fontFamily: fonts.sans,
     },
-    submitButton: {
-      marginTop: 10,
-      borderRadius: 16,
-      paddingVertical: 14,
-      alignItems: "center",
-      backgroundColor: colors.tint,
-    },
-    submitButtonPressed: {
-      opacity: 0.85,
-    },
-    submitButtonText: {
-      color: colors.background,
-      fontSize: 16,
-      fontWeight: "600",
-      fontFamily: fonts.rounded,
-    },
     loadingWrap: {
       paddingVertical: 40,
       gap: 12,

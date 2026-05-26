@@ -17,6 +17,7 @@ import { useProductStore } from "@/features/products/product-store";
 import { SaleService } from "@/features/sales/sale-service";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
+import { Button } from "@/shared/components/button";
 import { ConfirmationModal } from "@/shared/components/confirmation-modal";
 import { DatePickerField } from "@/shared/components/date-picker-field";
 import { DeleteButton } from "@/shared/components/delete-button";
@@ -467,23 +468,13 @@ export default function SalesForm() {
             />
           </View>
 
-          <Pressable
+          <Button
+            label={isEditing ? "Salvar venda" : "Criar venda"}
             onPress={form.handleSubmit(handleSubmit)}
+            loading={isSubmitting}
             disabled={isSubmitting || selectedCount === 0}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.submitButton,
-              (pressed || isSubmitting || selectedCount === 0) && styles.submitButtonPressed,
-            ]}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color={theme.colors.background} />
-            ) : (
-              <ThemedText style={styles.submitButtonText}>
-                {isEditing ? "Salvar venda" : "Criar venda"}
-              </ThemedText>
-            )}
-          </Pressable>
+            style={styles.submitButton}
+          />
         </>
       )}
 
@@ -630,19 +621,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     },
     submitButton: {
       marginTop: 10,
-      borderRadius: 16,
-      paddingVertical: 14,
-      alignItems: "center",
-      backgroundColor: colors.tint,
-    },
-    submitButtonPressed: {
-      opacity: 0.85,
-    },
-    submitButtonText: {
-      color: colors.background,
-      fontFamily: fonts.rounded,
-      fontSize: 16,
-      fontWeight: "600",
     },
   });
 
