@@ -1,28 +1,29 @@
 import { Pressable, StyleSheet, View } from "react-native";
 
-import type { Product } from "@/features/products/product.types";
-import { QuantityInput } from "@/shared/components/quantity-input";
-import ThemedText from "@/shared/components/themed-text";
-import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import type { Material } from "@/features/materials/material.types";
+import { IconSymbol, PriceInput, QuantityInput, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
+import { parsePriceDigitsToCents } from "@/shared/utils/parse-price-to-cents";
 
-type SaleSelectedProductItemProps = {
-  product: Product;
+type ExpenseSelectedMaterialItemProps = {
+  material: Material;
   quantity: number;
   unitPriceInCents: number;
   onQuantityChange: (quantity: number) => void;
+  onUnitPriceChange: (unitPriceInCents: number) => void;
   onRemove: () => void;
 };
 
-export function SaleSelectedProductItem({
-  product,
+export function ExpenseSelectedMaterialItem({
+  material,
   quantity,
   unitPriceInCents,
   onQuantityChange,
+  onUnitPriceChange,
   onRemove,
-}: SaleSelectedProductItemProps) {
+}: ExpenseSelectedMaterialItemProps) {
   const theme = useTheme();
   const styles = useStyles(createStyles);
   const lineTotal = quantity * unitPriceInCents;
@@ -32,16 +33,22 @@ export function SaleSelectedProductItem({
       <Pressable
         onPress={onRemove}
         accessibilityRole="button"
-        accessibilityLabel={`Remover ${product.name}`}
+        accessibilityLabel={`Remover ${material.name}`}
         hitSlop={8}
         style={({ pressed }) => [styles.removeButton, pressed && styles.removePressed]}
       >
         <IconSymbol name="trash" size={18} color={theme.colors.error} />
       </Pressable>
 
-      <View style={styles.productInfo}>
-        <ThemedText style={styles.productName}>{product.name}</ThemedText>
-        <ThemedText style={styles.unitPrice}>{formatCentsToCurrency(unitPriceInCents)}</ThemedText>
+      <View style={styles.materialInfo}>
+        <ThemedText style={styles.materialName}>{material.name}</ThemedText>
+
+        <PriceInput
+          value={String(unitPriceInCents)}
+          onChangeText={(text) => onUnitPriceChange(parsePriceDigitsToCents(text))}
+          placeholder="R$ 0,00"
+          style={styles.unitPriceInput}
+        />
       </View>
 
       <View style={styles.rightArea}>
@@ -65,15 +72,27 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       gap: 12,
       alignItems: "center",
     },
-    productInfo: {
+    materialInfo: {
       flex: 1,
-      gap: 6,
+      gap: 8,
+      justifyContent: "space-between",
     },
-    productName: {
+    materialName: {
       fontSize: 15,
       color: colors.text,
       fontFamily: fonts.rounded,
       fontWeight: "600",
+    },
+    materialBasePrice: {
+      fontSize: 13,
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
+    },
+    materialBasePriceMuted: {
+      fontSize: 13,
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
+      fontStyle: "italic",
     },
     removeButton: {
       padding: 4,
@@ -85,10 +104,19 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       alignItems: "flex-end",
       gap: 8,
     },
-    unitPrice: {
-      fontSize: 13,
-      color: colors.textMuted,
-      fontFamily: fonts.sans,
+    unitPriceInput: {
+      width: 120,
+      minHeight: 32,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      paddingHorizontal: 8,
+      textAlign: "center",
+      color: colors.text,
+      fontFamily: fonts.rounded,
+      fontWeight: "600",
+      fontSize: 12,
     },
     lineTotal: {
       fontSize: 14,

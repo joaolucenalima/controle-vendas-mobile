@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from "react-native";
 
 import type { Product } from "@/features/products/product.types";
-import ThemedText from "@/shared/components/themed-text";
+import { ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 
 type SaleProductSheetItemProps = {

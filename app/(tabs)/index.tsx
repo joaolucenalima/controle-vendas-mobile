@@ -5,9 +5,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } fro
 
 import { useDashboardStore } from "@/features/dashboard/dashboard-store";
 import { useProductStore } from "@/features/products/product-store";
-import { DatePickerField } from "@/shared/components/date-picker-field";
-import ThemedText from "@/shared/components/themed-text";
-import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import { DatePickerField, IconSymbol, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";

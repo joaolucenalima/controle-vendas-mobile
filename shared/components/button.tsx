@@ -6,7 +6,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import ThemedText from "@/shared/components/themed-text";
+import ThemedText from "./themed-text";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 

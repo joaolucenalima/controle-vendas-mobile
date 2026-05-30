@@ -6,8 +6,7 @@ import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
 import { useProductStore } from "@/features/products/product-store";
 import type { Product } from "@/features/products/product.types";
-import ThemedText from "@/shared/components/themed-text";
-import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import { IconSymbol, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";

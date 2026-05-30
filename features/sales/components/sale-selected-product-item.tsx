@@ -1,39 +1,26 @@
 import { Pressable, StyleSheet, View } from "react-native";
 
-import type { Material } from "@/features/materials/material.types";
-import { PriceInput } from "@/shared/components/price-input";
-import { QuantityInput } from "@/shared/components/quantity-input";
-import ThemedText from "@/shared/components/themed-text";
-import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import type { Product } from "@/features/products/product.types";
+import { IconSymbol, QuantityInput, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
 
-type ExpenseSelectedMaterialItemProps = {
-  material: Material;
+type SaleSelectedProductItemProps = {
+  product: Product;
   quantity: number;
   unitPriceInCents: number;
   onQuantityChange: (quantity: number) => void;
-  onUnitPriceChange: (unitPriceInCents: number) => void;
   onRemove: () => void;
 };
 
-function parsePriceDigitsToCents(value: string): number {
-  const digits = value.replace(/\D/g, "");
-  if (!digits) return 0;
-
-  const cents = Number(digits);
-  return Number.isFinite(cents) ? cents : 0;
-}
-
-export function ExpenseSelectedMaterialItem({
-  material,
+export function SaleSelectedProductItem({
+  product,
   quantity,
   unitPriceInCents,
   onQuantityChange,
-  onUnitPriceChange,
   onRemove,
-}: ExpenseSelectedMaterialItemProps) {
+}: SaleSelectedProductItemProps) {
   const theme = useTheme();
   const styles = useStyles(createStyles);
   const lineTotal = quantity * unitPriceInCents;
@@ -43,22 +30,16 @@ export function ExpenseSelectedMaterialItem({
       <Pressable
         onPress={onRemove}
         accessibilityRole="button"
-        accessibilityLabel={`Remover ${material.name}`}
+        accessibilityLabel={`Remover ${product.name}`}
         hitSlop={8}
         style={({ pressed }) => [styles.removeButton, pressed && styles.removePressed]}
       >
         <IconSymbol name="trash" size={18} color={theme.colors.error} />
       </Pressable>
 
-      <View style={styles.materialInfo}>
-        <ThemedText style={styles.materialName}>{material.name}</ThemedText>
-
-        <PriceInput
-          value={String(unitPriceInCents)}
-          onChangeText={(text) => onUnitPriceChange(parsePriceDigitsToCents(text))}
-          placeholder="R$ 0,00"
-          style={styles.unitPriceInput}
-        />
+      <View style={styles.productInfo}>
+        <ThemedText style={styles.productName}>{product.name}</ThemedText>
+        <ThemedText style={styles.unitPrice}>{formatCentsToCurrency(unitPriceInCents)}</ThemedText>
       </View>
 
       <View style={styles.rightArea}>
@@ -82,27 +63,15 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       gap: 12,
       alignItems: "center",
     },
-    materialInfo: {
+    productInfo: {
       flex: 1,
-      gap: 8,
-      justifyContent: "space-between",
+      gap: 6,
     },
-    materialName: {
+    productName: {
       fontSize: 15,
       color: colors.text,
       fontFamily: fonts.rounded,
       fontWeight: "600",
-    },
-    materialBasePrice: {
-      fontSize: 13,
-      color: colors.textMuted,
-      fontFamily: fonts.sans,
-    },
-    materialBasePriceMuted: {
-      fontSize: 13,
-      color: colors.textMuted,
-      fontFamily: fonts.sans,
-      fontStyle: "italic",
     },
     removeButton: {
       padding: 4,
@@ -114,19 +83,10 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       alignItems: "flex-end",
       gap: 8,
     },
-    unitPriceInput: {
-      width: 120,
-      minHeight: 32,
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.surface,
-      paddingHorizontal: 8,
-      textAlign: "center",
-      color: colors.text,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-      fontSize: 12,
+    unitPrice: {
+      fontSize: 13,
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
     },
     lineTotal: {
       fontSize: 14,

@@ -1,5 +1,5 @@
-import { useTheme } from "@/shared//hooks/use-theme";
-import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import { useTheme } from "@/shared/hooks/use-theme";
+import { IconSymbol } from "@/shared/components";
 import { StylesProps, useStyles } from "@/shared/hooks/use-styles";
 import { Stack, useRouter } from "expo-router";
 import { ReactNode } from "react";

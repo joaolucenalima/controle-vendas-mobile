@@ -3,8 +3,7 @@ import { useState } from "react";
 import { Alert, DevSettings, StyleSheet, View } from "react-native";
 
 import { resetDatabase } from "@/database/reset-database";
-import { Button } from "@/shared/components/button";
-import ThemedText from "@/shared/components/themed-text";
+import { Button, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
 

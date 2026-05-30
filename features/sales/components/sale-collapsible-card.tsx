@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 
 import { SaleService } from "@/features/sales/sale-service";
 import type { Sale, SaleWithItems } from "@/features/sales/sale.types";
-import ThemedText from "@/shared/components/themed-text";
+import { ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";

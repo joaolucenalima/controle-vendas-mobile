@@ -1,34 +1,31 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
-import { z } from "zod";
 
 import { ExpenseService } from "@/features/expenses/expense-service";
 import { useExpenseStore } from "@/features/expenses/expense-store";
+import { expenseFormSchema, type ExpenseFormValues } from "@/features/expenses/schema";
+import { ExpenseSelectedMaterialItem } from "@/features/materials/components/expense-selected-material-item";
+import { MaterialPickerSheet } from "@/features/materials/components/material-picker-sheet";
 import { useMaterialStore } from "@/features/materials/material-store";
 import type { Material } from "@/features/materials/material.types";
-import { Button } from "@/shared/components/button";
-import { ConfirmationModal } from "@/shared/components/confirmation-modal";
-import { DatePickerField } from "@/shared/components/date-picker-field";
-import { DeleteButton } from "@/shared/components/delete-button";
-import ThemedText from "@/shared/components/themed-text";
-import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import {
+  Button,
+  ConfirmationModal,
+  DatePickerField,
+  DeleteButton,
+  IconSymbol,
+  ThemedText,
+} from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
+import { calculateSubtotalInCents } from "@/shared/utils/calculate-line-items-total";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
 import { dateFilterKeyToSoldAtIso, getTodayDateFilterKey } from "@/shared/utils/format-date-filter";
-import { ExpenseSelectedMaterialItem } from "@/widgets/materials/expense-selected-material-item";
-import { MaterialPickerSheet } from "@/widgets/materials/material-picker-sheet";
-
-const formSchema = z.object({
-  notes: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { parseRouteId } from "@/shared/utils/parse-route-id";
 
 type SelectedMaterialState = {
   quantity: number;
@@ -51,7 +48,6 @@ function buildFallbackMaterial(materialId: number): Material {
 
 export default function ExpensesForm() {
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const isEditing = !!id;
   const router = useRouter();
   const theme = useTheme();
   const styles = useStyles(createStyles);
@@ -68,41 +64,26 @@ export default function ExpensesForm() {
   const [pickerSheet, setPickerSheet] = useState<MaterialPickerSheetState | null>(null);
   const [expenseDate, setExpenseDate] = useState(getTodayDateFilterKey);
 
+  const parsedId = parseRouteId(id);
+  const isEditing = parsedId !== null;
   const title = isEditing ? "Editar despesa" : "Nova despesa";
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ExpenseFormValues>({
+    resolver: zodResolver(expenseFormSchema),
     defaultValues: { notes: "" },
     mode: "onSubmit",
   });
 
-  useFocusEffect(
-    useCallback(() => {
-      loadMaterials();
-    }, [loadMaterials]),
-  );
-
-  const parsedId = useMemo(() => {
-    if (!id) return null;
-    const numeric = Number(id);
-    if (!Number.isFinite(numeric) || !Number.isInteger(numeric) || numeric <= 0) return null;
-    return numeric;
-  }, [id]);
-
-  const materialsById = useMemo(
-    () => new Map(materials.map((material) => [material.id, material])),
-    [materials],
-  );
-
-  const materialsSorted = useMemo(() => {
-    return [...materials].sort((a, b) => a.name.localeCompare(b.name));
-  }, [materials]);
+  useEffect(() => {
+    loadMaterials();
+  }, [loadMaterials]);
 
   useEffect(() => {
-    if (!isEditing) return;
-    if (!parsedId) {
-      Alert.alert("Erro", "ID inválido");
-      router.back();
+    if (!isEditing || !parsedId) {
+      if (id && !parsedId) {
+        Alert.alert("Erro", "ID inválido");
+        router.back();
+      }
       return;
     }
 
@@ -144,25 +125,18 @@ export default function ExpensesForm() {
     return () => {
       isMounted = false;
     };
-  }, [form, isEditing, parsedId, router]);
+  }, [form, id, isEditing, parsedId, router]);
 
-  const selectedEntries = useMemo(
-    () =>
-      Object.entries(selectedMaterials).map(
-        ([materialId, data]) => [Number(materialId), data] as const,
-      ),
-    [selectedMaterials],
+  const materialsById = new Map(materials.map((material) => [material.id, material]));
+  const selectedEntries = Object.entries(selectedMaterials).map(
+    ([materialId, data]) => [Number(materialId), data] as const,
   );
-
-  const totalInCents = useMemo(() => {
-    return selectedEntries.reduce(
-      (sum, [, data]) => sum + data.quantity * data.unitPriceInCents,
-      0,
-    );
-  }, [selectedEntries]);
-
+  const totalInCents = calculateSubtotalInCents(selectedEntries.map(([, data]) => data));
   const selectedCount = selectedEntries.length;
   const isSubmitting = form.formState.isSubmitting;
+  const availableMaterials = [...materials]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .filter((material) => !selectedMaterials[material.id]);
 
   function openMaterialPicker() {
     setPickerSheet({ search: "", pendingIds: [] });
@@ -180,7 +154,7 @@ export default function ExpensesForm() {
       return {
         ...current,
         pendingIds: isPending
-          ? current.pendingIds.filter((id) => id !== materialId)
+          ? current.pendingIds.filter((pendingId) => pendingId !== materialId)
           : [...current.pendingIds, materialId],
       };
     });
@@ -253,7 +227,7 @@ export default function ExpensesForm() {
     });
   }
 
-  async function onSubmit(values: FormValues) {
+  async function onSubmit(values: ExpenseFormValues) {
     try {
       if (selectedCount === 0) {
         Alert.alert("Erro", "Selecione ao menos um material");
@@ -273,7 +247,6 @@ export default function ExpensesForm() {
       }));
 
       const notes = values.notes?.trim();
-
       const createdAt = dateFilterKeyToSoldAtIso(expenseDate);
 
       if (!isEditing) {
@@ -327,24 +300,6 @@ export default function ExpensesForm() {
 
   const submitLabel = isEditing ? "Salvar" : "Criar";
 
-  const materialsList = selectedEntries.map(([materialId, data]) => {
-    const material = materialsById.get(materialId) ?? buildFallbackMaterial(materialId);
-
-    return (
-      <ExpenseSelectedMaterialItem
-        key={materialId}
-        material={material}
-        quantity={data.quantity}
-        unitPriceInCents={data.unitPriceInCents}
-        onQuantityChange={(quantity) => setMaterialQuantity(materialId, quantity)}
-        onUnitPriceChange={(unitPriceInCents) => setMaterialUnitPrice(materialId, unitPriceInCents)}
-        onRemove={() => removeMaterial(materialId)}
-      />
-    );
-  });
-
-  const availableMaterials = materialsSorted.filter((material) => !selectedMaterials[material.id]);
-
   return (
     <StackFormWrapper
       title={title}
@@ -392,7 +347,26 @@ export default function ExpensesForm() {
                 </ThemedText>
               </View>
             ) : (
-              <View style={styles.selectedList}>{materialsList}</View>
+              <View style={styles.selectedList}>
+                {selectedEntries.map(([materialId, data]) => {
+                  const material =
+                    materialsById.get(materialId) ?? buildFallbackMaterial(materialId);
+
+                  return (
+                    <ExpenseSelectedMaterialItem
+                      key={materialId}
+                      material={material}
+                      quantity={data.quantity}
+                      unitPriceInCents={data.unitPriceInCents}
+                      onQuantityChange={(quantity) => setMaterialQuantity(materialId, quantity)}
+                      onUnitPriceChange={(unitPriceInCents) =>
+                        setMaterialUnitPrice(materialId, unitPriceInCents)
+                      }
+                      onRemove={() => removeMaterial(materialId)}
+                    />
+                  );
+                })}
+              </View>
             )}
 
             <Pressable

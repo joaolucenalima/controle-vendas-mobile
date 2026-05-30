@@ -2,66 +2,28 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
-import { z } from "zod";
 
 import { ProductService } from "@/features/products/product-service";
+import { productFormSchema, type ProductFormValues } from "@/features/products/schema";
 import { useProductStore } from "@/features/products/product-store";
 import type { Product } from "@/features/products/product.types";
-import { Button } from "@/shared/components/button";
-import { ConfirmationModal } from "@/shared/components/confirmation-modal";
-import { DeleteButton } from "@/shared/components/delete-button";
-import { PriceInput } from "@/shared/components/price-input";
-import ThemedText from "@/shared/components/themed-text";
-import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import {
+  Button,
+  ConfirmationModal,
+  DeleteButton,
+  IconSymbol,
+  PriceInput,
+  ThemedText,
+} from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
-
-const priceStringSchema = z
-  .string()
-  .trim()
-  .min(1, "Preço obrigatório")
-  .refine((value) => {
-    const cents = parsePriceToCents(value);
-    return cents !== null && cents > 0;
-  }, "Preço inválido");
-
-const productFormSchema = z.object({
-  name: z.string().trim().min(1, "Nome obrigatório"),
-  description: z.string().optional(),
-  price: priceStringSchema,
-});
-
-type ProductFormValues = z.infer<typeof productFormSchema>;
-
-function parsePriceToCents(value: string): number | null {
-  const cleaned = value.replace(/\s/g, "").replace(/[^0-9.,]/g, "");
-  if (!cleaned) return null;
-
-  const normalized = cleaned.replace(",", ".");
-  if (!/^\d+(\.\d{0,2})?$/.test(normalized)) return null;
-
-  const [whole, fractionRaw] = normalized.split(".");
-  const wholeNumber = Number(whole);
-  if (!Number.isFinite(wholeNumber)) return null;
-
-  const fraction = (fractionRaw ?? "").padEnd(2, "0").slice(0, 2);
-  const fractionNumber = fraction ? Number(fraction) : 0;
-  if (!Number.isFinite(fractionNumber)) return null;
-
-  return wholeNumber * 100 + fractionNumber;
-}
-
-function formatCentsToPriceString(cents: number): string {
-  const value = cents / 100;
-  return new Intl.NumberFormat("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
+import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
+import { parsePriceToCents } from "@/shared/utils/parse-price-to-cents";
+import { parseRouteId } from "@/shared/utils/parse-route-id";
 
 export default function ProductsForm() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -77,7 +39,8 @@ export default function ProductsForm() {
   const [product, setProduct] = useState<Product | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-  const isEditing = !!id;
+  const parsedId = parseRouteId(id);
+  const isEditing = parsedId !== null;
   const title = isEditing ? "Editar produto" : "Novo produto";
 
   const form = useForm<ProductFormValues>({
@@ -86,18 +49,12 @@ export default function ProductsForm() {
     mode: "onSubmit",
   });
 
-  const parsedId = useMemo(() => {
-    if (!id) return null;
-    const numeric = Number(id);
-    if (!Number.isFinite(numeric) || !Number.isInteger(numeric) || numeric <= 0) return null;
-    return numeric;
-  }, [id]);
-
   useEffect(() => {
-    if (!isEditing) return;
-    if (!parsedId) {
-      Alert.alert("Erro", "ID inválido");
-      router.back();
+    if (!isEditing || !parsedId) {
+      if (id && !parsedId) {
+        Alert.alert("Erro", "ID inválido");
+        router.back();
+      }
       return;
     }
 
@@ -108,10 +65,11 @@ export default function ProductsForm() {
       .then((loaded) => {
         if (!isMounted) return;
         setProduct(loaded);
+        setImageUrl(loaded.image_url);
         form.reset({
           name: loaded.name,
           description: loaded.description ?? "",
-          price: formatCentsToPriceString(loaded.price_in_cents),
+          price: formatCentsToCurrency(loaded.price_in_cents),
         });
       })
       .catch((error: unknown) => {
@@ -128,7 +86,7 @@ export default function ProductsForm() {
     return () => {
       isMounted = false;
     };
-  }, [form, isEditing, parsedId, router]);
+  }, [form, id, isEditing, parsedId, router]);
 
   const isSubmitting = form.formState.isSubmitting;
 
@@ -289,7 +247,7 @@ export default function ProductsForm() {
             />
             {product ? (
               <ThemedText style={styles.helperText}>
-                Atual: {formatCentsToPriceString(product.price_in_cents)}
+                Atual: {formatCentsToCurrency(product.price_in_cents)}
               </ThemedText>
             ) : null}
           </View>
@@ -488,9 +446,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.rounded,
       fontWeight: "600",
     },
-    imageUrlInput: {
-      marginTop: 2,
-    },
     submitButton: {
       marginTop: 10,
     },
@@ -504,4 +459,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.sans,
     },
   });
-

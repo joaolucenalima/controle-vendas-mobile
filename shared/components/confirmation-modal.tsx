@@ -1,7 +1,7 @@
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 
-import { Button } from "@/shared/components/button";
-import ThemedText from "@/shared/components/themed-text";
+import { Button } from "./button";
+import ThemedText from "./themed-text";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 
 type ConfirmationModalProps = {

@@ -4,17 +4,14 @@ import { useCallback, useMemo, useState } from "react";
 import { Alert, FlatList, Pressable, StyleSheet, View } from "react-native";
 
 import { useProductStore } from "@/features/products/product-store";
+import { SaleCollapsibleCard } from "@/features/sales/components/sale-collapsible-card";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
-import { Button } from "@/shared/components/button";
-import { DatePickerField } from "@/shared/components/date-picker-field";
-import ThemedText from "@/shared/components/themed-text";
-import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import { Button, DatePickerField, IconSymbol, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
 import { parseDateFilterKey } from "@/shared/utils/format-date-filter";
-import { SaleCollapsibleCard } from "@/widgets/sales/sale-collapsible-card";
 
 export default function SalesScreen() {
   const router = useRouter();
@@ -123,13 +120,7 @@ export default function SalesScreen() {
         </View>
 
         <View style={styles.filterActions}>
-          <Button
-            label="Filtrar"
-            onPress={handleApplyFilters}
-            size="sm"
-            fullWidth={false}
-            flex
-          />
+          <Button label="Filtrar" onPress={handleApplyFilters} size="sm" fullWidth={false} flex />
 
           <Button
             label="Limpar"

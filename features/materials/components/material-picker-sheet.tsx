@@ -11,49 +11,44 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import type { Product } from "@/features/products/product.types";
-import ThemedText from "@/shared/components/themed-text";
-import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import type { Material } from "@/features/materials/material.types";
+import { IconSymbol, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
-import { SaleProductSheetItem } from "@/widgets/sales/sale-product-sheet-item";
+import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
 
-type SaleProductPickerSheetProps = {
+type MaterialPickerSheetProps = {
   visible: boolean;
-  products: Product[];
+  materials: Material[];
   pendingIds: number[];
   search: string;
   onSearchChange: (value: string) => void;
-  onToggleProduct: (productId: number) => void;
+  onToggleMaterial: (materialId: number) => void;
   onClose: () => void;
   onConfirm: () => void;
 };
 
-export function SaleProductPickerSheet({
+export function MaterialPickerSheet({
   visible,
-  products,
+  materials,
   pendingIds,
   search,
   onSearchChange,
-  onToggleProduct,
+  onToggleMaterial,
   onClose,
   onConfirm,
-}: SaleProductPickerSheetProps) {
+}: MaterialPickerSheetProps) {
   const theme = useTheme();
   const styles = useStyles(createStyles);
   const insets = useSafeAreaInsets();
   const pendingSet = useMemo(() => new Set(pendingIds), [pendingIds]);
 
-  const filteredProducts = useMemo(() => {
+  const filteredMaterials = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return products;
+    if (!query) return materials;
 
-    return products.filter((product) => {
-      const name = product.name.toLowerCase();
-      const description = (product.description ?? "").toLowerCase();
-      return name.includes(query) || description.includes(query);
-    });
-  }, [products, search]);
+    return materials.filter((material) => material.name.toLowerCase().includes(query));
+  }, [materials, search]);
 
   const canConfirm = pendingIds.length > 0;
 
@@ -70,7 +65,7 @@ export function SaleProductPickerSheet({
             <View style={styles.handle} />
 
             <View style={styles.header}>
-              <ThemedText style={styles.title}>Adicionar produtos</ThemedText>
+              <ThemedText style={styles.title}>Adicionar materiais</ThemedText>
               <Pressable
                 onPress={onClose}
                 accessibilityRole="button"
@@ -87,7 +82,7 @@ export function SaleProductPickerSheet({
               <TextInput
                 value={search}
                 onChangeText={onSearchChange}
-                placeholder="Buscar por nome ou descrição"
+                placeholder="Buscar material"
                 placeholderTextColor={theme.colors.textMuted}
                 style={styles.searchInput}
                 autoCorrect={false}
@@ -97,22 +92,46 @@ export function SaleProductPickerSheet({
             </View>
 
             <FlatList
-              data={filteredProducts}
+              data={filteredMaterials}
               keyExtractor={(item) => String(item.id)}
               keyboardShouldPersistTaps="handled"
               style={styles.list}
               contentContainerStyle={styles.listContent}
               ListEmptyComponent={
                 <ThemedText style={styles.emptyText}>
-                  {search.trim() ? "Nenhum produto encontrado" : "Nenhum produto cadastrado"}
+                  {search.trim() ? "Nenhum material encontrado" : "Nenhum material cadastrado"}
                 </ThemedText>
               }
               renderItem={({ item }) => (
-                <SaleProductSheetItem
-                  product={item}
-                  selected={pendingSet.has(item.id)}
-                  onToggle={() => onToggleProduct(item.id)}
-                />
+                <Pressable
+                  onPress={() => onToggleMaterial(item.id)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: pendingSet.has(item.id) }}
+                  style={({ pressed }) => [
+                    styles.card,
+                    pendingSet.has(item.id) && styles.cardSelected,
+                    pressed && styles.cardPressed,
+                  ]}
+                >
+                  <View
+                    style={[styles.checkbox, pendingSet.has(item.id) && styles.checkboxSelected]}
+                  >
+                    {pendingSet.has(item.id) ? (
+                      <ThemedText style={styles.checkboxLabel}>✓</ThemedText>
+                    ) : null}
+                  </View>
+
+                  <View style={styles.materialInfo}>
+                    <ThemedText style={styles.materialName}>{item.name}</ThemedText>
+                    {item.price_in_cents !== null ? (
+                      <ThemedText style={styles.materialPrice}>
+                        {formatCentsToCurrency(item.price_in_cents)}
+                      </ThemedText>
+                    ) : (
+                      <ThemedText style={styles.materialPriceMuted}>Sem preço</ThemedText>
+                    )}
+                  </View>
+                </Pressable>
               )}
             />
 
@@ -125,7 +144,7 @@ export function SaleProductPickerSheet({
                 (!canConfirm || pressed) && styles.confirmButtonDisabled,
               ]}
             >
-              <ThemedText style={styles.confirmButtonText}>Adicionar produtos</ThemedText>
+              <ThemedText style={styles.confirmButtonText}>Adicionar materiais</ThemedText>
             </Pressable>
           </View>
         </KeyboardAvoidingView>
@@ -168,6 +187,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
+      gap: 12,
     },
     title: {
       fontSize: 18,
@@ -213,6 +233,62 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       color: colors.textMuted,
       fontFamily: fonts.sans,
       paddingVertical: 24,
+    },
+    card: {
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceElevated,
+      padding: 14,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    cardSelected: {
+      borderColor: colors.tint,
+    },
+    cardPressed: {
+      opacity: 0.88,
+    },
+    checkbox: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.surface,
+    },
+    checkboxSelected: {
+      backgroundColor: colors.tint,
+      borderColor: colors.tint,
+    },
+    checkboxLabel: {
+      color: colors.background,
+      fontSize: 13,
+      fontWeight: "700",
+    },
+    materialInfo: {
+      flex: 1,
+      gap: 4,
+    },
+    materialName: {
+      fontSize: 15,
+      color: colors.text,
+      fontFamily: fonts.rounded,
+      fontWeight: "600",
+    },
+    materialPrice: {
+      fontSize: 12,
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
+    },
+    materialPriceMuted: {
+      fontSize: 12,
+      color: colors.textMuted,
+      fontFamily: fonts.sans,
+      fontStyle: "italic",
     },
     confirmButton: {
       borderRadius: 16,

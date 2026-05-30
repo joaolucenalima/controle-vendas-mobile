@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
     ActivityIndicator,
@@ -11,36 +11,36 @@ import {
     TextInput,
     View,
 } from "react-native";
-import { z } from "zod";
 
 import { useProductStore } from "@/features/products/product-store";
+import { calculateSaleTotalInCents } from "@/features/sales/calculate-sale-totals";
+import { SaleProductPickerSheet } from "@/features/sales/components/sale-product-picker-sheet";
+import { SaleSelectedProductItem } from "@/features/sales/components/sale-selected-product-item";
 import { SaleService } from "@/features/sales/sale-service";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
-import { Button } from "@/shared/components/button";
-import { ConfirmationModal } from "@/shared/components/confirmation-modal";
-import { DatePickerField } from "@/shared/components/date-picker-field";
-import { DeleteButton } from "@/shared/components/delete-button";
-import { PriceInput } from "@/shared/components/price-input";
-import ThemedText from "@/shared/components/themed-text";
-import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import { saleFormSchema, type SaleFormValues } from "@/features/sales/schema";
+import {
+    Button,
+    ConfirmationModal,
+    DatePickerField,
+    DeleteButton,
+    IconSymbol,
+    PriceInput,
+    ThemedText,
+} from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
+import { calculateSubtotalInCents } from "@/shared/utils/calculate-line-items-total";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
 import {
     dateFilterKeyToSoldAtIso,
     getTodayDateFilterKey,
     soldAtIsoToDateFilterKey,
 } from "@/shared/utils/format-date-filter";
-import { SaleProductPickerSheet } from "@/widgets/sales/sale-product-picker-sheet";
-import { SaleSelectedProductItem } from "@/widgets/sales/sale-selected-product-item";
-
-const saleFormSchema = z.object({
-  notes: z.string().optional(),
-});
-
-type SaleFormValues = z.infer<typeof saleFormSchema>;
+import { parsePriceDigitsToCents } from "@/shared/utils/parse-price-to-cents";
+import { parseRouteId } from "@/shared/utils/parse-route-id";
 
 type SelectedProductState = {
   quantity: number;
@@ -51,13 +51,6 @@ type ProductPickerSheetState = {
   search: string;
   pendingIds: number[];
 };
-
-function parsePriceDigitsToCents(value: string): number {
-  const digits = value.replace(/\D/g, "");
-  if (!digits) return 0;
-  const cents = Number(digits);
-  return Number.isFinite(cents) ? cents : 0;
-}
 
 export default function SalesForm() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -85,36 +78,31 @@ export default function SalesForm() {
     mode: "onSubmit",
   });
 
-  const parsedId = useMemo(() => {
-    if (!id) return null;
-    const numeric = Number(id);
-    if (!Number.isFinite(numeric) || !Number.isInteger(numeric) || numeric <= 0) return null;
-    return numeric;
-  }, [id]);
-
+  const parsedId = parseRouteId(id);
   const isEditing = parsedId !== null;
   const title = isEditing ? "Editar venda" : "Nova venda";
 
-  const productsById = useMemo(
-    () => new Map(products.map((product) => [product.id, product])),
-    [products],
-  );
-
-  const selectedProductIds = useMemo(() => new Set(selectedProducts.keys()), [selectedProducts]);
-
-  const availableProducts = useMemo(() => {
-    return products.filter((product) => !selectedProductIds.has(product.id));
-  }, [products, selectedProductIds]);
+  const productsById = new Map(products.map((product) => [product.id, product]));
+  const selectedProductIds = new Set(selectedProducts.keys());
+  const availableProducts = products.filter((product) => !selectedProductIds.has(product.id));
+  const selectedEntries = Array.from(selectedProducts.entries());
+  const subtotalInCents = calculateSubtotalInCents(selectedEntries.map(([, data]) => data));
+  const appliedDiscountInCents = discountInCents ?? 0;
+  const totalInCents = calculateSaleTotalInCents(subtotalInCents, appliedDiscountInCents);
+  const selectedCount = selectedEntries.length;
+  const isSubmitting = form.formState.isSubmitting;
+  const hasDiscount = discountInCents !== null;
 
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
 
   useEffect(() => {
-    if (!isEditing) return;
-    if (!parsedId) {
-      Alert.alert("Erro", "ID inválido");
-      router.back();
+    if (!isEditing || !parsedId) {
+      if (id && !parsedId) {
+        Alert.alert("Erro", "ID inválido");
+        router.back();
+      }
       return;
     }
 
@@ -155,22 +143,7 @@ export default function SalesForm() {
     return () => {
       isMounted = false;
     };
-  }, [form, isEditing, parsedId, router]);
-
-  const selectedEntries = useMemo(() => Array.from(selectedProducts.entries()), [selectedProducts]);
-
-  const subtotalInCents = useMemo(() => {
-    return selectedEntries.reduce(
-      (sum, [, data]) => sum + data.quantity * data.unitPriceInCents,
-      0,
-    );
-  }, [selectedEntries]);
-
-  const appliedDiscountInCents = discountInCents ?? 0;
-  const totalInCents = Math.max(subtotalInCents - appliedDiscountInCents, 0);
-  const selectedCount = selectedEntries.length;
-  const isSubmitting = form.formState.isSubmitting;
-  const hasDiscount = discountInCents !== null;
+  }, [form, id, isEditing, parsedId, router]);
 
   function openProductPicker() {
     setPickerSheet({ search: "", pendingIds: [] });
@@ -188,7 +161,7 @@ export default function SalesForm() {
       return {
         ...current,
         pendingIds: isPending
-          ? current.pendingIds.filter((id) => id !== productId)
+          ? current.pendingIds.filter((pendingId) => pendingId !== productId)
           : [...current.pendingIds, productId],
       };
     });
@@ -264,7 +237,6 @@ export default function SalesForm() {
       }));
 
       const notes = values.notes?.trim();
-
       const soldAt = dateFilterKeyToSoldAtIso(saleDate);
 
       if (!isEditing) {
