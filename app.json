@@ -20,7 +20,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.joaolucena.controlevendas"
+      "package": "com.joaolucena.controlevendas",
+      "permission": ["BLUETOOTH", "BLUETOOTH_ADMIN", "BLUETOOTH_CONNECT", "BLUETOOTH_SCAN"]
     },
     "plugins": [
       "expo-router",

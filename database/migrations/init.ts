@@ -2,6 +2,7 @@ import { db } from "../sqlite";
 import { create_initial_tables } from "./001_create_initial_tables";
 import { add_materials_table } from "./002_add_materials_table";
 import { add_product_image } from "./003_add_product_image";
+import { add_app_settings } from "./004_add_app_settings";
 
 export type Migration = {
   id: number;
@@ -13,6 +14,7 @@ const migrations: Migration[] = [
   create_initial_tables,
   add_materials_table,
   add_product_image,
+  add_app_settings,
 ].sort((a, b) => a.id - b.id);
 
 async function recordMigration(migration: Migration) {

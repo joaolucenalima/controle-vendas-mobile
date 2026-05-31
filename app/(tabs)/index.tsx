@@ -143,16 +143,14 @@ export default function HomeScreen() {
         <View style={styles.hero}>
           <View style={styles.heroHeader}>
             <ThemedText style={styles.title}>Painel Principal</ThemedText>
-            {__DEV__ ? (
-              <Pressable
-                onPress={() => router.push("/settings" as never)}
-                accessibilityRole="button"
-                accessibilityLabel="Abrir configurações de desenvolvimento"
-                style={({ pressed }) => [styles.settingsButton, pressed && styles.cardPressed]}
-              >
-                <IconSymbol name="gearshape.fill" size={20} color={theme.colors.text} />
-              </Pressable>
-            ) : null}
+            <Pressable
+              onPress={() => router.push("/settings" as never)}
+              accessibilityRole="button"
+              accessibilityLabel="Abrir configurações de desenvolvimento"
+              style={({ pressed }) => [styles.settingsButton, pressed && styles.cardPressed]}
+            >
+              <IconSymbol name="gearshape.fill" size={20} color={theme.colors.text} />
+            </Pressable>
           </View>
           <ThemedText style={styles.todayLabel}>{todayLabel}</ThemedText>
         </View>
