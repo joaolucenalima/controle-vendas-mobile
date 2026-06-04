@@ -92,10 +92,21 @@ export default function SalesScreen() {
   );
 
   const header = (
-    <View style={styles.headerWrap}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <ThemedText style={styles.title}>Vendas</ThemedText>
-        <ThemedText style={styles.subtitle}>Acompanhe e filtre por período</ThemedText>
+        <View style={styles.headerContent}>
+          <ThemedText style={styles.title}>Vendas</ThemedText>
+          <ThemedText style={styles.subtitle}>Acompanhe e filtre por período</ThemedText>
+        </View>
+
+        <Pressable
+          onPress={() => router.push("/sale-print")}
+          accessibilityRole="button"
+          accessibilityLabel="Abrir tela de impressão"
+          style={styles.printerButton}
+        >
+          <IconSymbol name="printer.fill.and.paper.fill" size={20} color={theme.colors.text} />
+        </Pressable>
       </View>
 
       <View style={styles.filterCard}>
@@ -179,18 +190,33 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       paddingBottom: 112,
       gap: 12,
     },
-    headerWrap: {
+    container: {
       gap: 12,
     },
     header: {
-      gap: 8,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
       marginBottom: 12,
+    },
+    headerContent: {
+      gap: 8,
     },
     title: {
       fontSize: 26,
       fontWeight: "bold",
       color: colors.text,
       fontFamily: fonts.rounded,
+    },
+    printerButton: {
+      padding: 12,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceElevated,
     },
     subtitle: {
       fontSize: 14,

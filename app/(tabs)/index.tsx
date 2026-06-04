@@ -146,7 +146,7 @@ export default function HomeScreen() {
             <Pressable
               onPress={() => router.push("/settings" as never)}
               accessibilityRole="button"
-              accessibilityLabel="Abrir configurações de desenvolvimento"
+              accessibilityLabel="Abrir configurações"
               style={({ pressed }) => [styles.settingsButton, pressed && styles.cardPressed]}
             >
               <IconSymbol name="gearshape.fill" size={20} color={theme.colors.text} />

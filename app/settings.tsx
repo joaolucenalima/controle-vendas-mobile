@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, DevSettings, StyleSheet, TextInput, View } from "react-native";
 
 import { resetDatabase } from "@/database/reset-database";
-import { PrinterSettingsRepository } from "@/features/settings/printer-settings-repository";
+import { usePrinterStore } from "@/features/printer/printer-store";
 import { Button, IconSymbol, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -17,12 +17,14 @@ export default function SettingsScreen() {
   const [isLoadingPrinter, setIsLoadingPrinter] = useState(true);
   const [isSavingPrinter, setIsSavingPrinter] = useState(false);
 
+  const { loadMacAddress, saveMacAddress } = usePrinterStore();
+
   useEffect(() => {
     let isMounted = true;
 
     async function loadPrinterSettings() {
       try {
-        const macAddress = await PrinterSettingsRepository.getMacAddress();
+        const macAddress = await loadMacAddress();
         if (isMounted) {
           setPrinterMacAddress(macAddress ?? "");
         }
@@ -73,7 +75,8 @@ export default function SettingsScreen() {
   async function handleSavePrinter() {
     try {
       setIsSavingPrinter(true);
-      await PrinterSettingsRepository.setMacAddress(printerMacAddress);
+      const savedMacAddress = await saveMacAddress(printerMacAddress);
+      setPrinterMacAddress(savedMacAddress ?? "");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Falha ao salvar a impressora";
       Alert.alert("Erro", message);
