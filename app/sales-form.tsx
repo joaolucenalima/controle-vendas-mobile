@@ -38,7 +38,7 @@ import {
     dateFilterKeyToSoldAtIso,
     getTodayDateFilterKey,
     soldAtIsoToDateFilterKey,
-} from "@/shared/utils/format-date-filter";
+} from "@/shared/utils/format-date";
 import { parsePriceDigitsToCents } from "@/shared/utils/parse-price-to-cents";
 import { parseRouteId } from "@/shared/utils/parse-route-id";
 
@@ -595,4 +595,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       marginTop: 10,
     },
   });
-

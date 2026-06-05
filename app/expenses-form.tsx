@@ -12,19 +12,19 @@ import { MaterialPickerSheet } from "@/features/materials/components/material-pi
 import { useMaterialStore } from "@/features/materials/material-store";
 import type { Material } from "@/features/materials/material.types";
 import {
-  Button,
-  ConfirmationModal,
-  DatePickerField,
-  DeleteButton,
-  IconSymbol,
-  ThemedText,
+    Button,
+    ConfirmationModal,
+    DatePickerField,
+    DeleteButton,
+    IconSymbol,
+    ThemedText,
 } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
 import { calculateSubtotalInCents } from "@/shared/utils/calculate-line-items-total";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
-import { dateFilterKeyToSoldAtIso, getTodayDateFilterKey } from "@/shared/utils/format-date-filter";
+import { dateFilterKeyToSoldAtIso, getTodayDateFilterKey } from "@/shared/utils/format-date";
 import { parseRouteId } from "@/shared/utils/parse-route-id";
 
 type SelectedMaterialState = {
@@ -561,4 +561,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.sans,
     },
   });
-

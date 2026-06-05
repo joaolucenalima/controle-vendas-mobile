@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
-import { parseDateFilterKey } from "@/shared/utils/format-date-filter";
+import { parseDateFilterKey } from "@/shared/utils/format-date";
 import { Button } from "./button";
 import { DatePickerField } from "./date-picker-field";
 import ThemedText from "./themed-text";

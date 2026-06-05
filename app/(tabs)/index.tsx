@@ -17,15 +17,7 @@ import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
-import { formatDateFilterDisplay } from "@/shared/utils/format-date-filter";
-
-function formatSaleDate(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(value));
-}
+import { formatDateFilterDisplay, formatDateToDisplay } from "@/shared/utils/format-date";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -204,7 +196,7 @@ export default function HomeScreen() {
               <>
                 <View style={[styles.saleItem, styles.lastSaleHeader]}>
                   <ThemedText style={styles.saleDate}>
-                    Data: {formatSaleDate(lastSale.sold_at)}
+                    Data: {formatDateToDisplay(lastSale.sold_at)}
                   </ThemedText>
                   <ThemedText style={[styles.saleAmount, styles.lastSaleTotal]}>
                     Total: {formatCentsToCurrency(lastSale.total_in_cents)}

@@ -10,7 +10,7 @@ import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
-import { formatDateToDisplay } from "@/shared/utils/format-date-filter";
+import { formatDateToDisplay } from "@/shared/utils/format-date";
 
 export default function ExpensesScreen() {
   const router = useRouter();
@@ -213,4 +213,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       transform: [{ scale: 0.97 }],
     },
   });
-

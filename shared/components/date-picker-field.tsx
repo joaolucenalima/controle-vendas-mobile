@@ -5,10 +5,10 @@ import { Modal, Platform, Pressable, StyleSheet, View } from "react-native";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import {
-  formatDateFilterDisplay,
-  formatDateFilterKey,
-  parseDateFilterKey,
-} from "@/shared/utils/format-date-filter";
+    formatDateFilterDisplay,
+    formatDateFilterKey,
+    parseDateFilterKey,
+} from "@/shared/utils/format-date";
 import ThemedText from "./themed-text";
 
 type DatePickerFieldProps = {

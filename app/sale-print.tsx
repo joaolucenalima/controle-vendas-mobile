@@ -11,7 +11,7 @@ import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
-import { formatDateToDisplay } from "@/shared/utils/format-date-filter";
+import { formatDateToDisplay } from "@/shared/utils/format-date";
 import { BLEPrinter, IBLEPrinter } from "react-native-ect-thermal-receipt-printer";
 
 export default function SalePrintScreen() {
