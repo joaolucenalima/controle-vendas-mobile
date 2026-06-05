@@ -3,7 +3,7 @@ import { CreateProductDTO, Product, UpdateProductDTO } from "./product.types";
 
 export const ProductRepository = {
   async findAll(): Promise<Product[]> {
-    return await db.getAllAsync<Product>("SELECT * FROM products");
+    return await db.getAllAsync<Product>("SELECT * FROM products ORDER BY name ASC");
   },
 
   async findById(id: number): Promise<Product | null> {
@@ -89,4 +89,3 @@ export const ProductRepository = {
     }
   },
 };
-
