@@ -1,6 +1,6 @@
-import { useTheme } from "@/shared/hooks/use-theme";
 import { IconSymbol } from "@/shared/components";
 import { StylesProps, useStyles } from "@/shared/hooks/use-styles";
+import { useTheme } from "@/shared/hooks/use-theme";
 import { Stack, useRouter } from "expo-router";
 import { ReactNode } from "react";
 import {
@@ -11,7 +11,9 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+
+const CONTENT_PADDING_BOTTOM = 0;
 
 export function StackFormWrapper({
   title,
@@ -25,9 +27,10 @@ export function StackFormWrapper({
   const router = useRouter();
   const theme = useTheme();
   const styles = useStyles(createStyles);
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.formContainer}>
+    <SafeAreaView style={styles.formContainer} edges={["bottom"]}>
       <Stack.Screen
         options={{
           title,
@@ -47,21 +50,25 @@ export function StackFormWrapper({
         }}
       />
 
-      <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
+      <View style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.select({ ios: "padding", android: undefined })}
         >
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.content}
+            contentInsetAdjustmentBehavior="automatic"
+            contentContainerStyle={[
+              styles.content,
+              { paddingBottom: CONTENT_PADDING_BOTTOM + insets.bottom },
+            ]}
             showsVerticalScrollIndicator={false}
           >
             {children}
           </ScrollView>
         </KeyboardAvoidingView>
-      </SafeAreaView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -81,7 +88,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     content: {
       paddingHorizontal: 20,
       paddingTop: 16,
-      paddingBottom: 28,
+      paddingBottom: CONTENT_PADDING_BOTTOM,
       gap: 16,
     },
     section: {
@@ -129,4 +136,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.sans,
     },
   });
-

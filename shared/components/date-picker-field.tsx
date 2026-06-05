@@ -2,7 +2,6 @@ import DateTimePicker, { type DateTimePickerEvent } from "@react-native-communit
 import { useMemo, useState } from "react";
 import { Modal, Platform, Pressable, StyleSheet, View } from "react-native";
 
-import ThemedText from "./themed-text";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import {
@@ -10,6 +9,7 @@ import {
   formatDateFilterKey,
   parseDateFilterKey,
 } from "@/shared/utils/format-date-filter";
+import ThemedText from "./themed-text";
 
 type DatePickerFieldProps = {
   label?: string;
@@ -30,6 +30,7 @@ export function DatePickerField({
 }: DatePickerFieldProps) {
   const theme = useTheme();
   const styles = useStyles(createStyles);
+
   const [visible, setVisible] = useState(false);
   const [draftDate, setDraftDate] = useState(() => parseDateFilterKey(value) ?? new Date());
 
@@ -127,7 +128,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
   StyleSheet.create({
     field: {
       flex: 1,
-      gap: 6,
     },
     label: {
       fontSize: 12,
@@ -138,10 +138,9 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.surface,
-      borderRadius: 14,
+      borderRadius: 8,
       paddingHorizontal: 12,
-      paddingVertical: 12,
-      minHeight: 46,
+      minHeight: 40,
       justifyContent: "center",
     },
     triggerPressed: {
@@ -192,4 +191,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontSize: 15,
     },
   });
-

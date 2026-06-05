@@ -57,7 +57,7 @@ export default function MaterialsScreen() {
       <View style={styles.safeAreaContent}>
         <View style={styles.header}>
           <ThemedText style={styles.title}>Materiais</ThemedText>
-          <ThemedText style={styles.subtitle}>Gerencie seu estoque de insumos</ThemedText>
+          <ThemedText style={styles.subtitle}>Gerencie seus materiais cadastrados</ThemedText>
         </View>
 
         {hasMaterials ? (
@@ -210,4 +210,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       transform: [{ scale: 0.97 }],
     },
   });
-

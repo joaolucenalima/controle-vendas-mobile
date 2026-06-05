@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 
+import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
+import { parseDateFilterKey } from "@/shared/utils/format-date-filter";
 import { Button } from "./button";
 import { DatePickerField } from "./date-picker-field";
 import ThemedText from "./themed-text";
-import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
-import { parseDateFilterKey } from "@/shared/utils/format-date-filter";
 
 export type DateRangeFilterValue = {
   initialDate: string;
@@ -70,7 +70,7 @@ export function DateRangeFilter({ value, onApply, onClear }: DateRangeFilterProp
 
   return (
     <View style={styles.filterCard}>
-      <ThemedText style={styles.filterTitle}>Periodo</ThemedText>
+      <ThemedText style={styles.filterTitle}>Filtrar por período</ThemedText>
 
       <View style={styles.filterInputs}>
         <DatePickerField
@@ -100,7 +100,6 @@ export function DateRangeFilter({ value, onApply, onClear }: DateRangeFilterProp
           size="sm"
           fullWidth={false}
           flex
-          bordered={false}
         />
       </View>
     </View>
@@ -115,13 +114,12 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       borderColor: colors.border,
       backgroundColor: colors.surfaceElevated,
       padding: 16,
-      gap: 12,
+      gap: 8,
     },
     filterTitle: {
       fontSize: 16,
       color: colors.text,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
+      fontWeight: "semibold",
     },
     filterInputs: {
       flexDirection: "row",
@@ -132,3 +130,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       gap: 10,
     },
   });
+

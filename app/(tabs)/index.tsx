@@ -116,19 +116,20 @@ export default function HomeScreen() {
   return (
     <TabsScreenLayout>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.hero}>
-          <View style={styles.heroHeader}>
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
             <ThemedText style={styles.title}>Painel Principal</ThemedText>
-            <Pressable
-              onPress={() => router.push("/settings" as never)}
-              accessibilityRole="button"
-              accessibilityLabel="Abrir configuracoes"
-              style={({ pressed }) => [styles.settingsButton, pressed && styles.cardPressed]}
-            >
-              <IconSymbol name="gearshape.fill" size={20} color={theme.colors.text} />
-            </Pressable>
+            <ThemedText style={styles.todayLabel}>{todayLabel}</ThemedText>
           </View>
-          <ThemedText style={styles.todayLabel}>{todayLabel}</ThemedText>
+
+          <Pressable
+            onPress={() => router.push("/settings" as never)}
+            accessibilityRole="button"
+            accessibilityLabel="Abrir configuracoes"
+            style={({ pressed }) => [styles.settingsButton, pressed && styles.cardPressed]}
+          >
+            <IconSymbol name="gearshape.fill" size={20} color={theme.colors.text} />
+          </Pressable>
         </View>
 
         <DateRangeFilter
@@ -168,7 +169,7 @@ export default function HomeScreen() {
         </View>
 
         <View>
-          <ThemedText style={styles.sectionTitle}>Acoes rapidas</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Ações rápidas</ThemedText>
           <View style={[styles.card, styles.quickActionsContainer]}>
             <Pressable
               onPress={() => router.push("/sales-form" as never)}
@@ -193,7 +194,7 @@ export default function HomeScreen() {
         </View>
 
         <View>
-          <ThemedText style={styles.sectionTitle}>Ultima venda</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Última venda</ThemedText>
           <View style={[styles.card, styles.lastSaleCard]}>
             {isLoading ? (
               <ActivityIndicator color={theme.colors.tint} />
@@ -241,26 +242,25 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
       paddingTop: 12,
       gap: 12,
     },
-    hero: {
-      gap: 8,
-    },
-    heroHeader: {
+    header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       gap: 12,
+      marginBottom: 12,
+    },
+    headerContent: {
+      gap: 8,
     },
     title: {
       fontSize: 28,
       fontWeight: "bold",
-      lineHeight: 32,
       color: colors.text,
       fontFamily: fonts.rounded,
     },
     settingsButton: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
+      padding: 12,
+      borderRadius: 16,
       alignItems: "center",
       justifyContent: "center",
       borderWidth: 1,
@@ -397,7 +397,6 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
     },
     saleLeft: {
       flex: 1,
-      gap: 4,
     },
     saleRight: {
       alignItems: "flex-end",

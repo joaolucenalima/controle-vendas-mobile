@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { initializeDatabase } from "@/database/migrations/init";
 import { configureDatabase } from "@/database/sqlite";
@@ -46,17 +47,18 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={navigationTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="products-form" options={{ headerShown: true }} />
-        <Stack.Screen name="materials-form" options={{ headerShown: true }} />
-        <Stack.Screen name="expenses-form" options={{ headerShown: true }} />
-        <Stack.Screen name="sales-form" options={{ headerShown: true }} />
-        <Stack.Screen name="settings" options={{ headerShown: true, title: "Configurações" }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider value={navigationTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="products-form" options={{ headerShown: true }} />
+          <Stack.Screen name="materials-form" options={{ headerShown: true }} />
+          <Stack.Screen name="expenses-form" options={{ headerShown: true }} />
+          <Stack.Screen name="sales-form" options={{ headerShown: true }} />
+          <Stack.Screen name="settings" options={{ headerShown: true, title: "Configurações" }} />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
-

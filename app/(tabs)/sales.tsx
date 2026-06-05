@@ -73,7 +73,7 @@ export default function SalesScreen() {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <ThemedText style={styles.title}>Vendas</ThemedText>
-          <ThemedText style={styles.subtitle}>Acompanhe e filtre por periodo</ThemedText>
+          <ThemedText style={styles.subtitle}>Acompanhe e filtre por período</ThemedText>
         </View>
 
         <Pressable
@@ -223,3 +223,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       transform: [{ scale: 0.97 }],
     },
   });
+

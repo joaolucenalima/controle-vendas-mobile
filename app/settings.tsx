@@ -45,7 +45,7 @@ export default function SettingsScreen() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [loadMacAddress]);
 
   function handleResetPress() {
     Alert.alert(
@@ -230,4 +230,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       color: colors.textMuted,
     },
   });
-

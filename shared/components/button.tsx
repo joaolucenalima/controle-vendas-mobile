@@ -6,9 +6,9 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import ThemedText from "./themed-text";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
+import ThemedText from "./themed-text";
 
 export type ButtonVariant = "primary" | "secondary" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
@@ -47,8 +47,7 @@ export function Button({
   const isDisabled = disabled || loading;
   const displayLabel = loading && loadingLabel ? loadingLabel : label;
 
-  const spinnerColor =
-    variant === "secondary" ? theme.colors.tint : theme.colors.background;
+  const spinnerColor = variant === "secondary" ? theme.colors.tint : theme.colors.background;
 
   return (
     <Pressable
@@ -72,7 +71,11 @@ export function Button({
         <ActivityIndicator color={spinnerColor} />
       ) : (
         <ThemedText
-          style={[styles.label, styles[`${variant}Label` as const], styles[`${size}Label` as const]]}
+          style={[
+            styles.label,
+            styles[`${variant}Label` as const],
+            styles[`${size}Label` as const],
+          ]}
         >
           {displayLabel}
         </ThemedText>
@@ -100,11 +103,11 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       opacity: 0.6,
     },
     sm: {
-      borderRadius: 14,
-      paddingVertical: 12,
+      borderRadius: 8,
+      paddingVertical: 8,
     },
     md: {
-      borderRadius: 14,
+      borderRadius: 12,
       paddingVertical: 12,
     },
     lg: {

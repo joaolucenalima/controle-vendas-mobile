@@ -33,6 +33,7 @@ const MAPPING = {
   "camera.fill": "camera-alt",
   "gearshape.fill": "settings",
   "printer.fill.and.paper.fill": "print",
+  printer: "print",
 } as IconMapping;
 
 /**

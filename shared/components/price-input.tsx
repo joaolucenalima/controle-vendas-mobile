@@ -57,7 +57,6 @@ export function PriceInput({
 
 const styles = StyleSheet.create({
   input: {
-    minHeight: 44,
+    minHeight: 40,
   },
 });
-
