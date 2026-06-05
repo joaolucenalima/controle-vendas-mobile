@@ -13,8 +13,6 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-const CONTENT_PADDING_BOTTOM = 0;
-
 export function StackFormWrapper({
   title,
   children,
@@ -58,10 +56,7 @@ export function StackFormWrapper({
           <ScrollView
             keyboardShouldPersistTaps="handled"
             contentInsetAdjustmentBehavior="automatic"
-            contentContainerStyle={[
-              styles.content,
-              { paddingBottom: CONTENT_PADDING_BOTTOM + insets.bottom },
-            ]}
+            contentContainerStyle={[styles.content, { paddingBottom: insets.bottom }]}
             showsVerticalScrollIndicator={false}
           >
             {children}
@@ -88,7 +83,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     content: {
       paddingHorizontal: 20,
       paddingTop: 16,
-      paddingBottom: CONTENT_PADDING_BOTTOM,
       gap: 16,
     },
     section: {

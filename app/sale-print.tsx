@@ -2,6 +2,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from "react-native";
 
+import { printReceipt } from "@/features/printer/print-receipt";
 import { usePrinterStore } from "@/features/printer/printer-store";
 import { useProductStore } from "@/features/products/product-store";
 import { useSaleStore } from "@/features/sales/sale-store";
@@ -12,7 +13,6 @@ import { useTheme } from "@/shared/hooks/use-theme";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
 import { formatDateToDisplay } from "@/shared/utils/format-date";
-import { BLEPrinter, IBLEPrinter } from "react-native-ect-thermal-receipt-printer";
 
 export default function SalePrintScreen() {
   const theme = useTheme();
@@ -20,66 +20,12 @@ export default function SalePrintScreen() {
 
   const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null);
   const [selectedSaleDetails, setSelectedSaleDetails] = useState<SaleWithItems | null>(null);
-  const [connectedPrinter, setConnectedPrinter] = useState<IBLEPrinter | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   const { sales, loadSales, getSaleById } = useSaleStore();
   const { products, loadProducts } = useProductStore();
   const { loadMacAddress } = usePrinterStore();
-
-  useFocusEffect(
-    useCallback(() => {
-      let isMounted = true;
-
-      async function fetchSales() {
-        try {
-          setIsLoading(true);
-          await Promise.all([loadSales(), loadProducts()]);
-        } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : "Falha ao carregar vendas";
-          if (isMounted) {
-            Alert.alert("Erro", message);
-          }
-        } finally {
-          if (isMounted) {
-            setIsLoading(false);
-          }
-        }
-      }
-
-      fetchSales();
-
-      return () => {
-        isMounted = false;
-      };
-    }, [loadProducts, loadSales]),
-  );
-
-  useEffect(() => {
-    if (!selectedSaleId) {
-      setSelectedSaleDetails(null);
-      return;
-    }
-
-    const stillExists = sales.some((sale) => sale.id === selectedSaleId);
-    if (!stillExists) {
-      setSelectedSaleId(null);
-      setSelectedSaleDetails(null);
-    }
-  }, [sales, selectedSaleId]);
-
-  useEffect(() => {
-    loadMacAddress().then((macAddress) => {
-      console.log("Loaded printer MAC address:", macAddress);
-      console.log(BLEPrinter);
-      BLEPrinter.init()
-        .then(() => BLEPrinter.getDeviceList())
-        .then((printers) =>
-          setConnectedPrinter(printers.find((printer) => printer.inner_mac_address === macAddress)),
-        );
-    });
-  }, [loadMacAddress]);
 
   const productNamesById = useMemo(() => {
     return products.reduce<Record<number, string>>((accumulator, product) => {
@@ -137,6 +83,68 @@ export default function SalePrintScreen() {
       </Pressable>
     );
   }
+
+  async function printSelectedSale() {
+    if (!selectedSaleDetails) {
+      Alert.alert("Nenhuma venda selecionada", "Por favor, selecione uma venda para imprimir.");
+      return;
+    }
+
+    const macAddress = await loadMacAddress();
+    if (!macAddress) {
+      Alert.alert(
+        "Impressora não configurada",
+        "Nenhum endereço MAC de impressora encontrado. Por favor, configure a impressora antes de tentar imprimir.",
+      );
+      return;
+    }
+
+    console.log("Iniciando impressão para a venda:", selectedSaleDetails);
+    console.log("Usando o endereço MAC da impressora:", macAddress);
+
+    await printReceipt(macAddress);
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+
+      async function fetchSales() {
+        try {
+          setIsLoading(true);
+          await Promise.all([loadSales(), loadProducts()]);
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : "Falha ao carregar vendas";
+          if (isMounted) {
+            Alert.alert("Erro", message);
+          }
+        } finally {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        }
+      }
+
+      fetchSales();
+
+      return () => {
+        isMounted = false;
+      };
+    }, [loadProducts, loadSales]),
+  );
+
+  useEffect(() => {
+    if (!selectedSaleId) {
+      setSelectedSaleDetails(null);
+      return;
+    }
+
+    const stillExists = sales.some((sale) => sale.id === selectedSaleId);
+    if (!stillExists) {
+      setSelectedSaleId(null);
+      setSelectedSaleDetails(null);
+    }
+  }, [sales, selectedSaleId]);
 
   return (
     <StackFormWrapper title="Impressão de Venda">
@@ -213,7 +221,7 @@ export default function SalePrintScreen() {
 
       <Button
         label="Imprimir venda"
-        onPress={() => Alert.alert("Em desenvolvimento", "A impressão será implementada em breve.")}
+        onPress={() => printSelectedSale()}
         disabled={!selectedSaleDetails}
         size="md"
       />
