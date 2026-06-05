@@ -117,7 +117,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     input: {
       minWidth: 44,
       maxWidth: 72,
-      paddingVertical: 2,
+      paddingVertical: 6,
       borderRadius: 10,
       borderWidth: 1,
       borderColor: colors.border,

@@ -107,7 +107,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       flex: 1,
       paddingHorizontal: 20,
       paddingTop: 12,
-      paddingBottom: 24,
     },
     header: {
       gap: 8,
@@ -235,4 +234,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       transform: [{ scale: 0.97 }],
     },
   });
-

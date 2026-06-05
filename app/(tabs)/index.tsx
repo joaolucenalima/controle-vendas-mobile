@@ -240,6 +240,7 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
     content: {
       paddingHorizontal: 20,
       paddingTop: 12,
+      paddingBottom: 16,
       gap: 12,
     },
     header: {

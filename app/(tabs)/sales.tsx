@@ -134,7 +134,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     listContent: {
       paddingHorizontal: 20,
       paddingTop: 12,
-      paddingBottom: 112,
       gap: 12,
     },
     container: {

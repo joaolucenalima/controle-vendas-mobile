@@ -17,7 +17,9 @@ export function TabsScreenLayout({ children }: TabsScreenLayoutProps) {
         <View style={styles.orbRing} />
       </View>
 
-      <SafeAreaView style={styles.safeArea}>{children}</SafeAreaView>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        {children}
+      </SafeAreaView>
     </View>
   );
 }
@@ -67,4 +69,3 @@ const createStyles = ({ colors }: StylesProps) =>
       borderColor: colors.border,
     },
   });
-

@@ -106,7 +106,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     },
     unitPriceInput: {
       width: 120,
-      minHeight: 32,
       borderRadius: 10,
       borderWidth: 1,
       borderColor: colors.border,
@@ -127,4 +126,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       textAlign: "right",
     },
   });
-
