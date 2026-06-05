@@ -32,6 +32,7 @@ const MAPPING = {
   "chevron.down": "expand-more",
   "camera.fill": "camera-alt",
   "gearshape.fill": "settings",
+  "printer.fill.and.paper.fill": "print",
 } as IconMapping;
 
 /**
@@ -53,4 +54,3 @@ export function IconSymbol({
 }) {
   return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
 }
-

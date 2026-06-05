@@ -1,16 +1,23 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { useDashboardStore } from "@/features/dashboard/dashboard-store";
 import { useProductStore } from "@/features/products/product-store";
-import { DatePickerField, IconSymbol, ThemedText } from "@/shared/components";
+import {
+  DateRangeFilter,
+  emptyDateRangeFilter,
+  getDateRangeFilterParams,
+  IconSymbol,
+  ThemedText,
+  type DateRangeFilterValue,
+} from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
-import { formatDateFilterDisplay, parseDateFilterKey } from "@/shared/utils/format-date-filter";
+import { formatDateFilterDisplay } from "@/shared/utils/format-date-filter";
 
 function formatSaleDate(value: string) {
   return new Intl.DateTimeFormat("pt-BR", {
@@ -29,10 +36,10 @@ export default function HomeScreen() {
   const { products, loadProducts } = useProductStore();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [draftInitialDate, setDraftInitialDate] = useState("");
-  const [draftFinalDate, setDraftFinalDate] = useState("");
-  const [appliedInitialDate, setAppliedInitialDate] = useState<string | undefined>(undefined);
-  const [appliedFinalDate, setAppliedFinalDate] = useState<string | undefined>(undefined);
+  const [dateFilter, setDateFilter] = useState<DateRangeFilterValue>({
+    initialDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+    finalDate: "",
+  });
 
   const todayLabel = useMemo(() => {
     const now = new Date();
@@ -54,29 +61,19 @@ export default function HomeScreen() {
   const marginPercent =
     metrics.salesAmount > 0 ? Math.round((profitInCents / metrics.salesAmount) * 100) : null;
 
-  const initialDateLimit = useMemo(
-    () => parseDateFilterKey(draftFinalDate) ?? undefined,
-    [draftFinalDate],
-  );
-
-  const finalDateLimit = useMemo(
-    () => parseDateFilterKey(draftInitialDate) ?? undefined,
-    [draftInitialDate],
-  );
-
   const periodLabel = useMemo(() => {
-    if (!appliedInitialDate && !appliedFinalDate) return "Todo o período";
+    if (!dateFilter.initialDate && !dateFilter.finalDate) return "Todo o periodo";
 
-    if (appliedInitialDate && appliedFinalDate) {
-      return `${formatDateFilterDisplay(appliedInitialDate)} — ${formatDateFilterDisplay(appliedFinalDate)}`;
+    if (dateFilter.initialDate && dateFilter.finalDate) {
+      return `${formatDateFilterDisplay(dateFilter.initialDate)} - ${formatDateFilterDisplay(dateFilter.finalDate)}`;
     }
 
-    if (appliedInitialDate) {
-      return `A partir de ${formatDateFilterDisplay(appliedInitialDate)}`;
+    if (dateFilter.initialDate) {
+      return `A partir de ${formatDateFilterDisplay(dateFilter.initialDate)}`;
     }
 
-    return `Até ${formatDateFilterDisplay(appliedFinalDate!)}`;
-  }, [appliedFinalDate, appliedInitialDate]);
+    return `Ate ${formatDateFilterDisplay(dateFilter.finalDate)}`;
+  }, [dateFilter]);
 
   const metricCards = useMemo(
     () => [
@@ -88,53 +85,32 @@ export default function HomeScreen() {
     [metrics],
   );
 
-  const metricsParams = useMemo(() => {
-    if (!appliedInitialDate && !appliedFinalDate) return undefined;
-    return { initialDate: appliedInitialDate, finalDate: appliedFinalDate };
-  }, [appliedFinalDate, appliedInitialDate]);
-
   useFocusEffect(
     useCallback(() => {
       let isMounted = true;
 
       setIsLoading(true);
 
-      Promise.all([loadProducts(), loadMetrics(metricsParams), loadLastSale()]).finally(() => {
+      Promise.all([
+        loadProducts(),
+        loadMetrics(getDateRangeFilterParams(dateFilter)),
+        loadLastSale(),
+      ]).finally(() => {
         if (isMounted) setIsLoading(false);
       });
 
       return () => {
         isMounted = false;
       };
-    }, [loadLastSale, loadMetrics, loadProducts, metricsParams]),
+    }, [dateFilter, loadLastSale, loadMetrics, loadProducts]),
   );
 
-  async function handleApplyFilters() {
-    if (draftInitialDate && draftFinalDate && draftInitialDate > draftFinalDate) {
-      Alert.alert("Erro", "A data inicial deve ser menor ou igual à data final");
-      return;
-    }
-
-    const nextInitial = draftInitialDate || undefined;
-    const nextFinal = draftFinalDate || undefined;
-
-    setAppliedInitialDate(nextInitial);
-    setAppliedFinalDate(nextFinal);
-
-    setIsLoading(true);
-    await loadMetrics(
-      nextInitial || nextFinal ? { initialDate: nextInitial, finalDate: nextFinal } : undefined,
-    );
-    setIsLoading(false);
+  function handleApplyFilters(value: DateRangeFilterValue) {
+    setDateFilter(value);
   }
 
   function handleClearFilters() {
-    setDraftInitialDate("");
-    setDraftFinalDate("");
-    setAppliedInitialDate(undefined);
-    setAppliedFinalDate(undefined);
-    setIsLoading(true);
-    loadMetrics().finally(() => setIsLoading(false));
+    setDateFilter(emptyDateRangeFilter);
   }
 
   return (
@@ -146,7 +122,7 @@ export default function HomeScreen() {
             <Pressable
               onPress={() => router.push("/settings" as never)}
               accessibilityRole="button"
-              accessibilityLabel="Abrir configurações"
+              accessibilityLabel="Abrir configuracoes"
               style={({ pressed }) => [styles.settingsButton, pressed && styles.cardPressed]}
             >
               <IconSymbol name="gearshape.fill" size={20} color={theme.colors.text} />
@@ -155,45 +131,11 @@ export default function HomeScreen() {
           <ThemedText style={styles.todayLabel}>{todayLabel}</ThemedText>
         </View>
 
-        <View style={styles.filterCard}>
-          <ThemedText style={styles.filterTitle}>Período</ThemedText>
-
-          <View style={styles.filterInputs}>
-            <DatePickerField
-              label="Inicial"
-              value={draftInitialDate}
-              onChange={setDraftInitialDate}
-              placeholder="Data inicial"
-              maximumDate={initialDateLimit}
-            />
-
-            <DatePickerField
-              label="Final"
-              value={draftFinalDate}
-              onChange={setDraftFinalDate}
-              placeholder="Data final"
-              minimumDate={finalDateLimit}
-            />
-          </View>
-
-          <View style={styles.filterActions}>
-            <Pressable
-              onPress={handleApplyFilters}
-              accessibilityRole="button"
-              style={({ pressed }) => [styles.filterButton, pressed && styles.filterButtonPressed]}
-            >
-              <ThemedText style={styles.filterButtonText}>Filtrar</ThemedText>
-            </Pressable>
-
-            <Pressable
-              onPress={handleClearFilters}
-              accessibilityRole="button"
-              style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
-            >
-              <ThemedText style={styles.clearButtonText}>Limpar</ThemedText>
-            </Pressable>
-          </View>
-        </View>
+        <DateRangeFilter
+          value={dateFilter}
+          onApply={handleApplyFilters}
+          onClear={handleClearFilters}
+        />
 
         <ThemedText style={styles.periodLabel}>{periodLabel}</ThemedText>
 
@@ -201,7 +143,7 @@ export default function HomeScreen() {
           <View style={styles.totalProfitLeft}>
             <ThemedText style={styles.totalProfitLabel}>Lucro total</ThemedText>
             <ThemedText style={styles.totalProfitMargin}>
-              {marginPercent !== null ? `Margem de ${marginPercent}%` : "Sem receita no período"}
+              {marginPercent !== null ? `Margem de ${marginPercent}%` : "Sem receita no periodo"}
             </ThemedText>
           </View>
           <ThemedText
@@ -226,7 +168,7 @@ export default function HomeScreen() {
         </View>
 
         <View>
-          <ThemedText style={styles.sectionTitle}>Ações rápidas</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Acoes rapidas</ThemedText>
           <View style={[styles.card, styles.quickActionsContainer]}>
             <Pressable
               onPress={() => router.push("/sales-form" as never)}
@@ -251,7 +193,7 @@ export default function HomeScreen() {
         </View>
 
         <View>
-          <ThemedText style={styles.sectionTitle}>Última venda</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Ultima venda</ThemedText>
           <View style={[styles.card, styles.lastSaleCard]}>
             {isLoading ? (
               <ActivityIndicator color={theme.colors.tint} />
@@ -331,60 +273,6 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
       letterSpacing: 1.4,
       color: colors.textMuted,
       fontFamily: fonts.sans,
-    },
-    filterCard: {
-      borderRadius: 18,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.surfaceElevated,
-      padding: 16,
-      gap: 12,
-    },
-    filterTitle: {
-      fontSize: 16,
-      color: colors.text,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-    },
-    filterInputs: {
-      flexDirection: "row",
-      gap: 12,
-    },
-    filterActions: {
-      flexDirection: "row",
-      gap: 10,
-    },
-    filterButton: {
-      flex: 1,
-      borderRadius: 14,
-      paddingVertical: 12,
-      alignItems: "center",
-      backgroundColor: colors.tint,
-    },
-    filterButtonPressed: {
-      opacity: 0.85,
-    },
-    filterButtonText: {
-      color: colors.background,
-      fontSize: 14,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-    },
-    clearButton: {
-      flex: 1,
-      borderRadius: 14,
-      paddingVertical: 12,
-      alignItems: "center",
-      backgroundColor: colors.surface,
-    },
-    clearButtonPressed: {
-      opacity: 0.85,
-    },
-    clearButtonText: {
-      color: colors.text,
-      fontSize: 14,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
     },
     periodLabel: {
       fontSize: 13,

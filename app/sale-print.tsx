@@ -71,13 +71,15 @@ export default function SalePrintScreen() {
 
   useEffect(() => {
     loadMacAddress().then((macAddress) => {
+      console.log("Loaded printer MAC address:", macAddress);
+      console.log(BLEPrinter);
       BLEPrinter.init()
         .then(() => BLEPrinter.getDeviceList())
         .then((printers) =>
           setConnectedPrinter(printers.find((printer) => printer.inner_mac_address === macAddress)),
         );
     });
-  }, []);
+  }, [loadMacAddress]);
 
   const productNamesById = useMemo(() => {
     return products.reduce<Record<number, string>>((accumulator, product) => {
@@ -369,4 +371,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.sans,
     },
   });
-

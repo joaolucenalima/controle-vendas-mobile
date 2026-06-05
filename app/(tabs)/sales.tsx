@@ -1,17 +1,23 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Alert, FlatList, Pressable, StyleSheet, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
 import { useProductStore } from "@/features/products/product-store";
 import { SaleCollapsibleCard } from "@/features/sales/components/sale-collapsible-card";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
-import { Button, DatePickerField, IconSymbol, ThemedText } from "@/shared/components";
+import {
+  DateRangeFilter,
+  emptyDateRangeFilter,
+  getDateRangeFilterParams,
+  IconSymbol,
+  ThemedText,
+  type DateRangeFilterValue,
+} from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { TabsScreenLayout } from "@/shared/layouts/tabs-screen-layout";
-import { parseDateFilterKey } from "@/shared/utils/format-date-filter";
 
 export default function SalesScreen() {
   const router = useRouter();
@@ -20,16 +26,13 @@ export default function SalesScreen() {
   const { sales, loadSales } = useSaleStore();
   const { products, loadProducts } = useProductStore();
 
-  const [draftInitialDate, setDraftInitialDate] = useState("");
-  const [draftFinalDate, setDraftFinalDate] = useState("");
-  const [appliedInitialDate, setAppliedInitialDate] = useState<string | undefined>(undefined);
-  const [appliedFinalDate, setAppliedFinalDate] = useState<string | undefined>(undefined);
+  const [dateFilter, setDateFilter] = useState<DateRangeFilterValue>(emptyDateRangeFilter);
 
   useFocusEffect(
     useCallback(() => {
       loadProducts();
-      loadSales({ initialDate: appliedInitialDate, finalDate: appliedFinalDate });
-    }, [appliedFinalDate, appliedInitialDate, loadProducts, loadSales]),
+      loadSales(getDateRangeFilterParams(dateFilter));
+    }, [dateFilter, loadProducts, loadSales]),
   );
 
   const productNamesById = useMemo(() => {
@@ -41,16 +44,6 @@ export default function SalesScreen() {
 
   const totalFiltered = sales.length;
 
-  const initialDateLimit = useMemo(
-    () => parseDateFilterKey(draftFinalDate) ?? undefined,
-    [draftFinalDate],
-  );
-
-  const finalDateLimit = useMemo(
-    () => parseDateFilterKey(draftInitialDate) ?? undefined,
-    [draftInitialDate],
-  );
-
   function handleCreate() {
     router.push("/sales-form");
   }
@@ -59,28 +52,12 @@ export default function SalesScreen() {
     router.push({ pathname: "/sales-form", params: { id: String(saleId) } });
   }
 
-  async function handleApplyFilters() {
-    if (draftInitialDate && draftFinalDate && draftInitialDate > draftFinalDate) {
-      Alert.alert("Erro", "A data inicial deve ser menor ou igual à data final");
-      return;
-    }
-
-    const nextInitial = draftInitialDate || undefined;
-    const nextFinal = draftFinalDate || undefined;
-
-    setAppliedInitialDate(nextInitial);
-    setAppliedFinalDate(nextFinal);
-    await loadSales(
-      nextInitial || nextFinal ? { initialDate: nextInitial, finalDate: nextFinal } : undefined,
-    );
+  function handleApplyFilters(value: DateRangeFilterValue) {
+    setDateFilter(value);
   }
 
   function handleClearFilters() {
-    setDraftInitialDate("");
-    setDraftFinalDate("");
-    setAppliedInitialDate(undefined);
-    setAppliedFinalDate(undefined);
-    loadSales();
+    setDateFilter(emptyDateRangeFilter);
   }
 
   const renderSale = ({ item }: { item: Sale }) => (
@@ -96,54 +73,24 @@ export default function SalesScreen() {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <ThemedText style={styles.title}>Vendas</ThemedText>
-          <ThemedText style={styles.subtitle}>Acompanhe e filtre por período</ThemedText>
+          <ThemedText style={styles.subtitle}>Acompanhe e filtre por periodo</ThemedText>
         </View>
 
         <Pressable
           onPress={() => router.push("/sale-print")}
           accessibilityRole="button"
-          accessibilityLabel="Abrir tela de impressão"
+          accessibilityLabel="Abrir tela de impressao"
           style={styles.printerButton}
         >
           <IconSymbol name="printer.fill.and.paper.fill" size={20} color={theme.colors.text} />
         </Pressable>
       </View>
 
-      <View style={styles.filterCard}>
-        <ThemedText style={styles.filterTitle}>Período</ThemedText>
-
-        <View style={styles.filterInputs}>
-          <DatePickerField
-            label="Inicial"
-            value={draftInitialDate}
-            onChange={setDraftInitialDate}
-            placeholder="Data inicial"
-            maximumDate={initialDateLimit}
-          />
-
-          <DatePickerField
-            label="Final"
-            value={draftFinalDate}
-            onChange={setDraftFinalDate}
-            placeholder="Data final"
-            minimumDate={finalDateLimit}
-          />
-        </View>
-
-        <View style={styles.filterActions}>
-          <Button label="Filtrar" onPress={handleApplyFilters} size="sm" fullWidth={false} flex />
-
-          <Button
-            label="Limpar"
-            onPress={handleClearFilters}
-            variant="secondary"
-            size="sm"
-            fullWidth={false}
-            flex
-            bordered={false}
-          />
-        </View>
-      </View>
+      <DateRangeFilter
+        value={dateFilter}
+        onApply={handleApplyFilters}
+        onClear={handleClearFilters}
+      />
 
       <View style={styles.summaryRow}>
         <ThemedText style={styles.summaryLabel}>Resultados</ThemedText>
@@ -163,7 +110,7 @@ export default function SalesScreen() {
           <View style={styles.emptyState}>
             <ThemedText style={styles.emptyTitle}>Nenhuma venda encontrada</ThemedText>
             <ThemedText style={styles.emptySubtitle}>
-              Tente outro período ou cadastre uma nova venda.
+              Tente outro periodo ou cadastre uma nova venda.
             </ThemedText>
           </View>
         }
@@ -223,28 +170,6 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       color: colors.textMuted,
       fontFamily: fonts.sans,
     },
-    filterCard: {
-      borderRadius: 18,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.surfaceElevated,
-      padding: 16,
-      gap: 12,
-    },
-    filterTitle: {
-      fontSize: 16,
-      color: colors.text,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-    },
-    filterInputs: {
-      flexDirection: "row",
-      gap: 12,
-    },
-    filterActions: {
-      flexDirection: "row",
-      gap: 10,
-    },
     summaryRow: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -298,4 +223,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       transform: [{ scale: 0.97 }],
     },
   });
-

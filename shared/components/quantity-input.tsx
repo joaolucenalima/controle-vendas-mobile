@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
-import { IconSymbol } from "./ui/icon-symbol";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
+import { IconSymbol } from "./ui/icon-symbol";
 
 type QuantityInputProps = {
   value: number;
@@ -117,7 +117,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     input: {
       minWidth: 44,
       maxWidth: 72,
-      height: 32,
+      paddingVertical: 2,
       borderRadius: 10,
       borderWidth: 1,
       borderColor: colors.border,
@@ -125,8 +125,8 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       paddingHorizontal: 8,
       textAlign: "center",
       color: colors.text,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-      fontSize: 15,
+      fontSize: 12,
+      includeFontPadding: false,
+      textAlignVertical: "center",
     },
   });
