@@ -1,12 +1,10 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
-import { useProductStore } from "@/features/products/product-store";
 import { SaleCollapsibleCard } from "@/features/sales/components/sale-collapsible-card";
 import { useSaleStore } from "@/features/sales/sale-store";
-import type { Sale } from "@/features/sales/sale.types";
 import {
   DateRangeFilter,
   emptyDateRangeFilter,
@@ -23,49 +21,17 @@ export default function SalesScreen() {
   const router = useRouter();
   const theme = useTheme();
   const styles = useStyles(createStyles);
-  const { sales, loadSales } = useSaleStore();
-  const { products, loadProducts } = useProductStore();
 
   const [dateFilter, setDateFilter] = useState<DateRangeFilterValue>(emptyDateRangeFilter);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadProducts();
-      loadSales(getDateRangeFilterParams(dateFilter));
-    }, [dateFilter, loadProducts, loadSales]),
-  );
-
-  const productNamesById = useMemo(() => {
-    return products.reduce<Record<number, string>>((accumulator, product) => {
-      accumulator[product.id] = product.name;
-      return accumulator;
-    }, {});
-  }, [products]);
+  const { sales, loadSales } = useSaleStore();
 
   const totalFiltered = sales.length;
 
-  function handleCreate() {
-    router.push("/sales-form");
-  }
-
-  function handleEdit(saleId: number) {
-    router.push({ pathname: "/sales-form", params: { id: String(saleId) } });
-  }
-
-  function handleApplyFilters(value: DateRangeFilterValue) {
-    setDateFilter(value);
-  }
-
-  function handleClearFilters() {
-    setDateFilter(emptyDateRangeFilter);
-  }
-
-  const renderSale = ({ item }: { item: Sale }) => (
-    <SaleCollapsibleCard
-      sale={item}
-      productNamesById={productNamesById}
-      onEdit={() => handleEdit(item.id)}
-    />
+  useFocusEffect(
+    useCallback(() => {
+      loadSales(getDateRangeFilterParams(dateFilter));
+    }, [dateFilter, loadSales]),
   );
 
   const header = (
@@ -88,8 +54,8 @@ export default function SalesScreen() {
 
       <DateRangeFilter
         value={dateFilter}
-        onApply={handleApplyFilters}
-        onClear={handleClearFilters}
+        onApply={(value) => setDateFilter(value)}
+        onClear={() => setDateFilter(emptyDateRangeFilter)}
       />
 
       <View style={styles.summaryRow}>
@@ -104,7 +70,12 @@ export default function SalesScreen() {
       <FlatList
         data={sales}
         keyExtractor={(item) => String(item.id)}
-        renderItem={renderSale}
+        renderItem={({ item }) => (
+          <SaleCollapsibleCard
+            sale={item}
+            onEdit={() => router.push({ pathname: "/sales-form", params: { id: String(item.id) } })}
+          />
+        )}
         ListHeaderComponent={header}
         ListEmptyComponent={
           <View style={styles.emptyState}>
@@ -119,7 +90,7 @@ export default function SalesScreen() {
       />
 
       <Pressable
-        onPress={handleCreate}
+        onPress={() => router.push("/sales-form")}
         accessibilityRole="button"
         style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
       >

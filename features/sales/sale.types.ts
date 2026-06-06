@@ -29,6 +29,7 @@ export interface SaleItem {
   id: number;
   sale_id: number;
   product_id: number;
+  product_name: string;
   quantity: number;
   unit_price_in_cents: number;
   subtotal_in_cents: number;
@@ -45,4 +46,3 @@ export interface Sale {
 export interface SaleWithItems extends Sale {
   items: SaleItem[];
 }
-

@@ -38,7 +38,16 @@ async function findSaleRowById(database: DatabaseLike, id: number): Promise<Sale
 
 async function findItemsBySaleId(database: DatabaseLike, saleId: number): Promise<SaleItem[]> {
   return await database.getAllAsync<SaleItem>(
-    "SELECT * FROM sale_items WHERE sale_id = ? ORDER BY id ASC",
+    `SELECT 
+      sale_items.*, 
+      products.name as product_name 
+    FROM 
+      sale_items 
+      LEFT JOIN products ON products.id = sale_items.product_id 
+    WHERE 
+      sale_id = ? 
+    ORDER BY 
+      id ASC`,
     [saleId],
   );
 }
@@ -325,4 +334,3 @@ export const SaleRepository = {
     }
   },
 };
-

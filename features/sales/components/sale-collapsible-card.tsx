@@ -7,50 +7,17 @@ import { ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
+import { formatDateToDisplay } from "@/shared/utils/format-date";
 
 type SaleCollapsibleCardProps = {
   sale: Sale;
-  productNamesById: Record<number, string>;
   onEdit: () => void;
 };
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function SaleItemRow({
-  productName,
-  quantity,
-  unitPriceInCents,
-  subtotalInCents,
-}: {
-  productName: string;
-  quantity: number;
-  unitPriceInCents: number;
-  subtotalInCents: number;
-}) {
-  const styles = useStyles(createStyles);
-
-  return (
-    <View style={styles.itemRow}>
-      <View style={styles.itemLeft}>
-        <ThemedText style={styles.itemName}>{productName}</ThemedText>
-        <ThemedText style={styles.itemMeta}>
-          Qtd. {quantity} · {formatCentsToCurrency(unitPriceInCents)}
-        </ThemedText>
-      </View>
-      <ThemedText style={styles.itemSubtotal}>{formatCentsToCurrency(subtotalInCents)}</ThemedText>
-    </View>
-  );
-}
-
-export function SaleCollapsibleCard({ sale, productNamesById, onEdit }: SaleCollapsibleCardProps) {
+export function SaleCollapsibleCard({ sale, onEdit }: SaleCollapsibleCardProps) {
   const styles = useStyles(createStyles);
   const theme = useTheme();
+
   const [expanded, setExpanded] = useState(false);
   const [details, setDetails] = useState<SaleWithItems | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -81,7 +48,7 @@ export function SaleCollapsibleCard({ sale, productNamesById, onEdit }: SaleColl
           style={({ pressed }) => [styles.toggleArea, pressed && styles.cardPressed]}
         >
           <View style={styles.headerLeft}>
-            <ThemedText style={styles.dateText}>{formatDate(sale.sold_at)}</ThemedText>
+            <ThemedText style={styles.dateText}>{formatDateToDisplay(sale.sold_at)}</ThemedText>
             <ThemedText style={styles.totalText}>
               {formatCentsToCurrency(sale.total_in_cents)}
             </ThemedText>
@@ -109,13 +76,17 @@ export function SaleCollapsibleCard({ sale, productNamesById, onEdit }: SaleColl
           ) : saleDetails?.items.length ? (
             <>
               {saleDetails.items.map((item) => (
-                <SaleItemRow
-                  key={item.id}
-                  productName={productNamesById[item.product_id] ?? `Produto #${item.product_id}`}
-                  quantity={item.quantity}
-                  unitPriceInCents={item.unit_price_in_cents}
-                  subtotalInCents={item.subtotal_in_cents}
-                />
+                <View key={item.id} style={styles.itemRow}>
+                  <View style={styles.itemLeft}>
+                    <ThemedText style={styles.itemName}>{item.product_name}</ThemedText>
+                    <ThemedText style={styles.itemMeta}>
+                      Qtd. {item.quantity} · {formatCentsToCurrency(item.unit_price_in_cents)}
+                    </ThemedText>
+                  </View>
+                  <ThemedText style={styles.itemSubtotal}>
+                    {formatCentsToCurrency(item.subtotal_in_cents)}
+                  </ThemedText>
+                </View>
               ))}
 
               <View style={styles.footer}>
@@ -267,4 +238,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.sans,
     },
   });
-

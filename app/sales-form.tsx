@@ -3,13 +3,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-    ActivityIndicator,
-    Alert,
-    Pressable,
-    StyleSheet,
-    Switch,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  StyleSheet,
+  Switch,
+  TextInput,
+  View,
 } from "react-native";
 
 import { useProductStore } from "@/features/products/product-store";
@@ -21,13 +21,13 @@ import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale } from "@/features/sales/sale.types";
 import { saleFormSchema, type SaleFormValues } from "@/features/sales/schema";
 import {
-    Button,
-    ConfirmationModal,
-    DatePickerField,
-    DeleteButton,
-    IconSymbol,
-    PriceInput,
-    ThemedText,
+  Button,
+  ConfirmationModal,
+  DatePickerField,
+  DeleteButton,
+  IconSymbol,
+  PriceInput,
+  ThemedText,
 } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -35,9 +35,9 @@ import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
 import { calculateSubtotalInCents } from "@/shared/utils/calculate-line-items-total";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
 import {
-    dateFilterKeyToSoldAtIso,
-    getTodayDateFilterKey,
-    soldAtIsoToDateFilterKey,
+  dateFilterKeyToSoldAtIso,
+  getTodayDateFilterKey,
+  soldAtIsoToDateFilterKey,
 } from "@/shared/utils/format-date";
 import { parsePriceDigitsToCents } from "@/shared/utils/parse-price-to-cents";
 import { parseRouteId } from "@/shared/utils/parse-route-id";
@@ -145,10 +145,6 @@ export default function SalesForm() {
     };
   }, [form, id, isEditing, parsedId, router]);
 
-  function openProductPicker() {
-    setPickerSheet({ search: "", pendingIds: [] });
-  }
-
   function closeProductPicker() {
     setPickerSheet(null);
   }
@@ -216,10 +212,6 @@ export default function SalesForm() {
       });
       return next;
     });
-  }
-
-  function handleDiscountToggle(enabled: boolean) {
-    setDiscountInCents(enabled ? (discountInCents ?? 0) : null);
   }
 
   async function handleSubmit(values: SaleFormValues) {
@@ -353,7 +345,7 @@ export default function SalesForm() {
             )}
 
             <Pressable
-              onPress={openProductPicker}
+              onPress={() => setPickerSheet({ search: "", pendingIds: [] })}
               accessibilityRole="button"
               style={({ pressed }) => [
                 styles.addProductsButton,
@@ -382,7 +374,9 @@ export default function SalesForm() {
               <ThemedText style={styles.summaryLabel}>Desconto</ThemedText>
               <Switch
                 value={hasDiscount}
-                onValueChange={handleDiscountToggle}
+                onValueChange={(enabled) =>
+                  setDiscountInCents(enabled ? (discountInCents ?? 0) : null)
+                }
                 trackColor={{ false: theme.colors.border, true: theme.colors.tint }}
                 thumbColor={theme.colors.background}
               />

@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import {
-    FlatList,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    StyleSheet,
-    TextInput,
-    View,
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -41,6 +41,7 @@ export function SaleProductPickerSheet({
   const theme = useTheme();
   const styles = useStyles(createStyles);
   const insets = useSafeAreaInsets();
+
   const pendingSet = useMemo(() => new Set(pendingIds), [pendingIds]);
 
   const filteredProducts = useMemo(() => {
@@ -229,4 +230,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontWeight: "600",
     },
   });
-

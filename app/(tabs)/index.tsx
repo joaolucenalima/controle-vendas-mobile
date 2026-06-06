@@ -4,7 +4,6 @@ import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { useDashboardStore } from "@/features/dashboard/dashboard-store";
-import { useProductStore } from "@/features/products/product-store";
 import {
   DateRangeFilter,
   emptyDateRangeFilter,
@@ -21,17 +20,16 @@ import { formatDateFilterDisplay, formatDateToDisplay } from "@/shared/utils/for
 
 export default function HomeScreen() {
   const router = useRouter();
-  const styles = useStyles(getStyles);
   const theme = useTheme();
-
-  const { metrics, lastSale, loadMetrics, loadLastSale } = useDashboardStore();
-  const { products, loadProducts } = useProductStore();
+  const styles = useStyles(getStyles);
 
   const [isLoading, setIsLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateRangeFilterValue>({
     initialDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
     finalDate: "",
   });
+
+  const { metrics, lastSale, loadMetrics, loadLastSale } = useDashboardStore();
 
   const todayLabel = useMemo(() => {
     const now = new Date();
@@ -41,13 +39,6 @@ export default function HomeScreen() {
       month: "short",
     });
   }, []);
-
-  const productNamesById = useMemo(() => {
-    return products.reduce<Record<number, string>>((accumulator, product) => {
-      accumulator[product.id] = product.name;
-      return accumulator;
-    }, {});
-  }, [products]);
 
   const profitInCents = metrics.salesAmount - metrics.expensesAmount;
   const marginPercent =
@@ -83,27 +74,17 @@ export default function HomeScreen() {
 
       setIsLoading(true);
 
-      Promise.all([
-        loadProducts(),
-        loadMetrics(getDateRangeFilterParams(dateFilter)),
-        loadLastSale(),
-      ]).finally(() => {
-        if (isMounted) setIsLoading(false);
-      });
+      Promise.all([loadMetrics(getDateRangeFilterParams(dateFilter)), loadLastSale()]).finally(
+        () => {
+          if (isMounted) setIsLoading(false);
+        },
+      );
 
       return () => {
         isMounted = false;
       };
-    }, [dateFilter, loadLastSale, loadMetrics, loadProducts]),
+    }, [dateFilter, loadLastSale, loadMetrics]),
   );
-
-  function handleApplyFilters(value: DateRangeFilterValue) {
-    setDateFilter(value);
-  }
-
-  function handleClearFilters() {
-    setDateFilter(emptyDateRangeFilter);
-  }
 
   return (
     <TabsScreenLayout>
@@ -126,8 +107,8 @@ export default function HomeScreen() {
 
         <DateRangeFilter
           value={dateFilter}
-          onApply={handleApplyFilters}
-          onClear={handleClearFilters}
+          onApply={(value) => setDateFilter(value)}
+          onClear={() => setDateFilter(emptyDateRangeFilter)}
         />
 
         <ThemedText style={styles.periodLabel}>{periodLabel}</ThemedText>
@@ -206,9 +187,7 @@ export default function HomeScreen() {
                 {lastSale.items.map((item) => (
                   <View style={styles.saleItem} key={item.id}>
                     <View style={styles.saleLeft}>
-                      <ThemedText style={styles.saleTitle}>
-                        {productNamesById[item.product_id] ?? `Produto #${item.product_id}`}
-                      </ThemedText>
+                      <ThemedText style={styles.saleTitle}>{item.product_name}</ThemedText>
                       <ThemedText style={styles.saleQuantity}>x{item.quantity}</ThemedText>
                     </View>
                     <View style={styles.saleRight}>
