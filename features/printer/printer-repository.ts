@@ -22,5 +22,22 @@ export const PrinterRepository = {
   async clearMacAddress(): Promise<void> {
     await db.runAsync("DELETE FROM app_settings WHERE key = ?", [PRINTER_MAC_KEY]);
   },
-};
 
+  async saveReceiptTitle(value: string): Promise<string | null> {
+    const row = await db.runAsync(
+      "INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
+      ["receipt_title", value, new Date().toISOString()],
+    );
+
+    return row.lastInsertRowId ? value : null;
+  },
+
+  async getReceiptTitle(): Promise<string | null> {
+    const row = await db.getFirstAsync<{ value: string | null }>(
+      "SELECT value FROM app_settings WHERE key = ?",
+      ["receipt_title"],
+    );
+
+    return row?.value ?? null;
+  },
+};

@@ -51,7 +51,7 @@ export function StackFormWrapper({
       <View style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.select({ ios: "padding", android: undefined })}
+          behavior={Platform.select({ ios: "padding", android: "height" })}
         >
           <ScrollView
             keyboardShouldPersistTaps="handled"

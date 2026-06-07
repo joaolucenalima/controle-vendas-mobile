@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Alert, DevSettings, StyleSheet, TextInput, View } from "react-native";
+import { Alert, DevSettings, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { resetDatabase } from "@/database/reset-database";
 import { usePrinterStore } from "@/features/printer/printer-store";
+import { ConnectToPrinterView } from "@/features/settings/components/connect-to-printer";
 import { Button, IconSymbol, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
@@ -12,40 +13,38 @@ export default function SettingsScreen() {
   const styles = useStyles(createStyles);
   const theme = useTheme();
 
-  const [isResetting, setIsResetting] = useState(false);
   const [printerMacAddress, setPrinterMacAddress] = useState("");
-  const [isLoadingPrinter, setIsLoadingPrinter] = useState(true);
+  const [printerReceiptTitle, setPrinterReceiptTitle] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
   const [isSavingPrinter, setIsSavingPrinter] = useState(false);
+  const [isBluetoothModalVisible, setIsBluetoothModalVisible] = useState(false);
 
-  const { loadMacAddress, saveMacAddress } = usePrinterStore();
+  const { loadPrinterSettings, saveMacAddress, saveReceiptTitle } = usePrinterStore();
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadPrinterSettings() {
+    async function loadSettings() {
       try {
-        const macAddress = await loadMacAddress();
+        const { macAddress, receiptTitle } = await loadPrinterSettings();
         if (isMounted) {
           setPrinterMacAddress(macAddress ?? "");
+          setPrinterReceiptTitle(receiptTitle ?? "");
         }
       } catch (error: unknown) {
         if (isMounted) {
           const message = error instanceof Error ? error.message : "Falha ao carregar a impressora";
           Alert.alert("Erro", message);
         }
-      } finally {
-        if (isMounted) {
-          setIsLoadingPrinter(false);
-        }
       }
     }
 
-    loadPrinterSettings();
+    loadSettings();
 
     return () => {
       isMounted = false;
     };
-  }, [loadMacAddress]);
+  }, [loadPrinterSettings]);
 
   function handleResetPress() {
     Alert.alert(
@@ -75,10 +74,21 @@ export default function SettingsScreen() {
   async function handleSavePrinter() {
     try {
       setIsSavingPrinter(true);
-      const savedMacAddress = await saveMacAddress(printerMacAddress);
-      setPrinterMacAddress(savedMacAddress ?? "");
+
+      if (printerMacAddress.length > 0) {
+        const savedMacAddress = await saveMacAddress(printerMacAddress);
+        setPrinterMacAddress(savedMacAddress ?? "");
+      }
+
+      if (printerReceiptTitle.length > 0) {
+        const savedReceiptTitle = await saveReceiptTitle(printerReceiptTitle);
+        setPrinterReceiptTitle(savedReceiptTitle ?? "");
+      }
+
+      Alert.alert("Sucesso", "Configurações salvas com sucesso.");
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Falha ao salvar a impressora";
+      const message =
+        error instanceof Error ? error.message : "Falha ao salvar a configurações da impressora";
       Alert.alert("Erro", message);
     } finally {
       setIsSavingPrinter(false);
@@ -90,7 +100,7 @@ export default function SettingsScreen() {
       {__DEV__ ? (
         <View style={styles.card}>
           <ThemedText style={styles.cardTitle}>Ferramentas de desenvolvimento</ThemedText>
-          <ThemedText style={styles.cardDescription}>
+          <ThemedText style={styles.sectionDescription}>
             Use este atalho para resetar o SQLite local durante testes.
           </ThemedText>
 
@@ -114,32 +124,72 @@ export default function SettingsScreen() {
           <ThemedText style={styles.cardTitle}>Impressora Térmica</ThemedText>
         </View>
 
-        <ThemedText style={styles.cardDescription}>
-          Adicione o endereço MAC da sua impressora para imprimir recibos diretamente do app.
-        </ThemedText>
-
         <View style={styles.section}>
-          <ThemedText style={styles.label}>Endereço MAC</ThemedText>
+          <View style={styles.section}>
+            <ThemedText style={styles.label}>Endereço MAC</ThemedText>
+
+            <ThemedText style={styles.sectionDescription}>
+              Adicione o endereço MAC da sua impressora.
+            </ThemedText>
+
+            <TextInput
+              value={printerMacAddress}
+              onChangeText={setPrinterMacAddress}
+              placeholderTextColor={theme.colors.textMuted}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              editable={!isSavingPrinter}
+              style={styles.input}
+            />
+
+            <ThemedText style={styles.sectionDescription}>
+              Ou obtenha o MAC se conectando à impressora.
+            </ThemedText>
+
+            <Pressable
+              style={({ pressed }) => [styles.bluetoothButton, pressed && { opacity: 0.7 }]}
+              disabled={isSavingPrinter}
+              onPress={() => setIsBluetoothModalVisible(true)}
+            >
+              <ThemedText style={styles.bluetoothButtonLabel}>Selecionar via Bluetooth</ThemedText>
+            </Pressable>
+          </View>
+
+          <ThemedText style={styles.label}>Título do recibo</ThemedText>
+
+          <ThemedText style={styles.sectionDescription}>
+            Digite um título personalizado para os recibos. Este título aparecerá no topo de cada
+            recibo impresso.
+          </ThemedText>
+
           <TextInput
-            value={printerMacAddress}
-            onChangeText={setPrinterMacAddress}
+            value={printerReceiptTitle}
+            onChangeText={setPrinterReceiptTitle}
             placeholderTextColor={theme.colors.textMuted}
-            autoCapitalize="characters"
             autoCorrect={false}
-            editable={!isLoadingPrinter && !isSavingPrinter}
+            editable={!isSavingPrinter}
             style={styles.input}
           />
         </View>
 
         <Button
-          label="Salvar impressora"
+          label="Salvar configurações"
           onPress={handleSavePrinter}
           loading={isSavingPrinter}
-          disabled={isLoadingPrinter || isSavingPrinter}
+          disabled={isSavingPrinter}
           size="md"
           style={styles.saveButton}
         />
       </View>
+
+      <ConnectToPrinterView
+        visible={isBluetoothModalVisible}
+        onClose={() => setIsBluetoothModalVisible(false)}
+        selectDevice={(macAddress: string) => {
+          setPrinterMacAddress(macAddress);
+          setIsBluetoothModalVisible(false);
+        }}
+      />
     </StackFormWrapper>
   );
 }
@@ -171,21 +221,22 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     cardTitle: {
       fontSize: 16,
       fontFamily: fonts.rounded,
-      fontWeight: "600",
+      fontWeight: "700",
       color: colors.text,
     },
-    cardDescription: {
-      fontSize: 14,
+    sectionDescription: {
+      fontSize: 12,
       fontFamily: fonts.sans,
       color: colors.textMuted,
     },
     section: {
-      gap: 8,
+      gap: 4,
     },
     label: {
-      fontSize: 14,
       color: colors.textMuted,
+      fontSize: 14,
       fontFamily: fonts.sans,
+      fontWeight: "700",
     },
     input: {
       borderWidth: 1,
@@ -209,6 +260,20 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     saveButton: {
       marginTop: 4,
     },
+    bluetoothButton: {
+      backgroundColor: "#0082FC",
+      borderRadius: 12,
+      paddingVertical: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 8,
+    },
+    bluetoothButtonLabel: {
+      color: "white",
+      fontFamily: fonts.rounded,
+      fontWeight: "600",
+      fontSize: 14,
+    },
     unavailableCard: {
       borderRadius: 18,
       borderWidth: 1,
@@ -217,6 +282,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       padding: 16,
       gap: 12,
       alignItems: "flex-start",
+      marginTop: 4,
     },
     unavailableTitle: {
       fontSize: 16,

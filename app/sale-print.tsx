@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from "react-native";
 
 import { formatSaleToPrint } from "@/features/printer/format-sale-to-print";
+import { usePrinterStore } from "@/features/printer/printer-store";
 import { usePrinter } from "@/features/printer/use-printer";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale, SaleWithItems } from "@/features/sales/sale.types";
@@ -23,6 +24,7 @@ export default function SalePrintScreen() {
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   const { sales, loadSales, getSaleById } = useSaleStore();
+  const { receiptTitle, loadReceiptTitle } = usePrinterStore();
   const { print } = usePrinter();
 
   async function handleSelectSale(saleId: number) {
@@ -91,7 +93,7 @@ export default function SalePrintScreen() {
       async function fetchSales() {
         try {
           setIsLoading(true);
-          await loadSales();
+          await Promise.all([loadSales(), loadReceiptTitle()]);
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : "Falha ao carregar vendas";
           if (isMounted) {
@@ -109,7 +111,7 @@ export default function SalePrintScreen() {
       return () => {
         isMounted = false;
       };
-    }, [loadSales]),
+    }, [loadSales, loadReceiptTitle]),
   );
 
   useEffect(() => {
@@ -152,9 +154,13 @@ export default function SalePrintScreen() {
 
       {selectedSaleDetails && (
         <View style={styles.saleDetailsCard}>
-          <ThemedText style={styles.saleDetailsTitle}>
+          {receiptTitle && <ThemedText style={styles.saleDetailsTitle}>{receiptTitle}</ThemedText>}
+
+          <ThemedText style={styles.saleDetailsDate}>
             Data da venda: {formatDateToDisplay(selectedSaleDetails.sold_at)}
           </ThemedText>
+
+          <View style={styles.totalSeparator} />
 
           {isLoadingDetails ? (
             <View style={styles.itemsLoadingWrap}>
@@ -182,10 +188,10 @@ export default function SalePrintScreen() {
 
               <View style={styles.itemRow}>
                 <View style={{ flex: 1 }}>
-                  <ThemedText style={styles.itemName}>Total</ThemedText>
+                  <ThemedText style={styles.totalText}>Total</ThemedText>
                 </View>
 
-                <ThemedText style={styles.itemSubtotal}>
+                <ThemedText style={styles.totalText}>
                   {formatCentsToCurrency(selectedSaleDetails.total_in_cents)}
                 </ThemedText>
               </View>
@@ -290,9 +296,16 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       borderColor: colors.border,
       backgroundColor: colors.surfaceElevated,
       padding: 16,
-      gap: 12,
+      gap: 8,
     },
     saleDetailsTitle: {
+      textAlign: "center",
+      fontSize: 18,
+      fontFamily: fonts.rounded,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    saleDetailsDate: {
       textAlign: "center",
       fontSize: 16,
       fontFamily: fonts.rounded,
@@ -329,6 +342,12 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       height: 1,
       backgroundColor: colors.textMuted,
       marginVertical: 4,
+    },
+    totalText: {
+      fontSize: 16,
+      color: colors.text,
+      fontFamily: fonts.rounded,
+      fontWeight: "700",
     },
     itemsEmpty: {
       fontSize: 13,

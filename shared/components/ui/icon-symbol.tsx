@@ -35,6 +35,7 @@ const MAPPING = {
   "printer.fill.and.paper.fill": "print",
   printer: "print",
   checkmark: "check",
+  "arrow.triangle.2.circlepath": "refresh",
 } as IconMapping;
 
 /**

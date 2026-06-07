@@ -1,7 +1,7 @@
 import { PrinterRepository } from "./printer-repository";
 
 function normalizeMacAddress(value: string): string {
-  return value.trim().toUpperCase();
+  return value.replace(/-/g, ":").trim().toUpperCase();
 }
 
 export const PrinterService = {
@@ -20,5 +20,14 @@ export const PrinterService = {
     await PrinterRepository.upsertMacAddress(normalized);
     return normalized;
   },
-};
 
+  async getReceiptTitle(): Promise<string | null> {
+    return await PrinterRepository.getReceiptTitle();
+  },
+
+  async saveReceiptTitle(value: string): Promise<string | null> {
+    const trimmed = value.trim();
+
+    return await PrinterRepository.saveReceiptTitle(trimmed);
+  },
+};
