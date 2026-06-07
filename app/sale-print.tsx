@@ -2,8 +2,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from "react-native";
 
-import { printReceipt } from "@/features/printer/print-receipt";
-import { usePrinterStore } from "@/features/printer/printer-store";
+import { formatSaleToPrint } from "@/features/printer/format-sale-to-print";
+import { usePrinter } from "@/features/printer/use-printer";
 import { useProductStore } from "@/features/products/product-store";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale, SaleWithItems } from "@/features/sales/sale.types";
@@ -25,7 +25,7 @@ export default function SalePrintScreen() {
 
   const { sales, loadSales, getSaleById } = useSaleStore();
   const { products, loadProducts } = useProductStore();
-  const { loadMacAddress } = usePrinterStore();
+  const { print } = usePrinter();
 
   const productNamesById = useMemo(() => {
     return products.reduce<Record<number, string>>((accumulator, product) => {
@@ -90,19 +90,7 @@ export default function SalePrintScreen() {
       return;
     }
 
-    const macAddress = await loadMacAddress();
-    if (!macAddress) {
-      Alert.alert(
-        "Impressora não configurada",
-        "Nenhum endereço MAC de impressora encontrado. Por favor, configure a impressora antes de tentar imprimir.",
-      );
-      return;
-    }
-
-    console.log("Iniciando impressão para a venda:", selectedSaleDetails);
-    console.log("Usando o endereço MAC da impressora:", macAddress);
-
-    await printReceipt(macAddress);
+    print(formatSaleToPrint(selectedSaleDetails));
   }
 
   useFocusEffect(
