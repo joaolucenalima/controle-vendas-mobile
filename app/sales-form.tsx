@@ -541,7 +541,8 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       gap: 8,
     },
     emptyProductsText: {
-      color: colors.textMuted,
+      textAlign: "center",
+      color: colors.tabIconDefault,
       fontFamily: fonts.sans,
       fontSize: 14,
     },
@@ -554,7 +555,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       borderWidth: 1,
       borderColor: colors.tint,
       paddingVertical: 12,
-      marginTop: 12,
+      marginTop: 8,
     },
     addProductsPressed: {
       opacity: 0.85,

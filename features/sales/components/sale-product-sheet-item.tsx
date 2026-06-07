@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet, View } from "react-native";
 
 import type { Product } from "@/features/products/product.types";
-import { ThemedText } from "@/shared/components";
+import { IconSymbol, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
+import { useTheme } from "@/shared/hooks/use-theme";
 
 type SaleProductSheetItemProps = {
   product: Product;
@@ -11,6 +12,7 @@ type SaleProductSheetItemProps = {
 };
 
 export function SaleProductSheetItem({ product, selected, onToggle }: SaleProductSheetItemProps) {
+  const theme = useTheme();
   const styles = useStyles(createStyles);
 
   return (
@@ -25,7 +27,9 @@ export function SaleProductSheetItem({ product, selected, onToggle }: SaleProduc
       ]}
     >
       <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-        {selected ? <ThemedText style={styles.checkboxLabel}>✓</ThemedText> : null}
+        {selected ? (
+          <IconSymbol size={18} name="checkmark" color={theme.colors.background} />
+        ) : null}
       </View>
 
       <View style={styles.productInfo}>
@@ -74,14 +78,8 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       backgroundColor: colors.tint,
       borderColor: colors.tint,
     },
-    checkboxLabel: {
-      color: colors.background,
-      fontSize: 13,
-      fontWeight: "700",
-    },
     productInfo: {
       flex: 1,
-      gap: 4,
     },
     productName: {
       fontSize: 15,
@@ -101,4 +99,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontStyle: "italic",
     },
   });
-

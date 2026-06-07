@@ -1,10 +1,9 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from "react-native";
 
 import { formatSaleToPrint } from "@/features/printer/format-sale-to-print";
 import { usePrinter } from "@/features/printer/use-printer";
-import { useProductStore } from "@/features/products/product-store";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale, SaleWithItems } from "@/features/sales/sale.types";
 import { Button, IconSymbol, ThemedText } from "@/shared/components";
@@ -24,15 +23,7 @@ export default function SalePrintScreen() {
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   const { sales, loadSales, getSaleById } = useSaleStore();
-  const { products, loadProducts } = useProductStore();
   const { print } = usePrinter();
-
-  const productNamesById = useMemo(() => {
-    return products.reduce<Record<number, string>>((accumulator, product) => {
-      accumulator[product.id] = product.name;
-      return accumulator;
-    }, {});
-  }, [products]);
 
   async function handleSelectSale(saleId: number) {
     setSelectedSaleId(saleId);
@@ -65,11 +56,11 @@ export default function SalePrintScreen() {
         ]}
       >
         <View style={styles.saleMeta}>
-          {isSelected ? (
-            <IconSymbol name="checkmark.circle.fill" size={18} color={theme.colors.tint} />
-          ) : (
-            <IconSymbol name="circle" size={18} color={theme.colors.textMuted} />
-          )}
+          <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+            {isSelected ? (
+              <IconSymbol size={18} name="checkmark" color={theme.colors.background} />
+            ) : null}
+          </View>
 
           <View>
             <ThemedText style={styles.saleId}>Venda #{sale.id}</ThemedText>
@@ -100,7 +91,7 @@ export default function SalePrintScreen() {
       async function fetchSales() {
         try {
           setIsLoading(true);
-          await Promise.all([loadSales(), loadProducts()]);
+          await loadSales();
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : "Falha ao carregar vendas";
           if (isMounted) {
@@ -118,7 +109,7 @@ export default function SalePrintScreen() {
       return () => {
         isMounted = false;
       };
-    }, [loadProducts, loadSales]),
+    }, [loadSales]),
   );
 
   useEffect(() => {
@@ -162,7 +153,7 @@ export default function SalePrintScreen() {
       {selectedSaleDetails && (
         <View style={styles.saleDetailsCard}>
           <ThemedText style={styles.saleDetailsTitle}>
-            Venda do dia {formatDateToDisplay(selectedSaleDetails.sold_at)}
+            Data da venda: {formatDateToDisplay(selectedSaleDetails.sold_at)}
           </ThemedText>
 
           {isLoadingDetails ? (
@@ -175,9 +166,7 @@ export default function SalePrintScreen() {
               {selectedSaleDetails.items.map((item) => (
                 <View key={item.id} style={styles.itemRow}>
                   <View style={{ flex: 1 }}>
-                    <ThemedText style={styles.itemName}>
-                      {productNamesById[item.product_id] ?? `Produto #${item.product_id}`}
-                    </ThemedText>
+                    <ThemedText style={styles.itemName}>{item.product_name}</ThemedText>
                     <ThemedText style={styles.itemMeta}>
                       Qtd. {item.quantity} - {formatCentsToCurrency(item.unit_price_in_cents)}
                     </ThemedText>
@@ -240,6 +229,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     },
     saleList: {
       gap: 10,
+      maxHeight: 400,
     },
     saleCard: {
       borderRadius: 16,
@@ -274,9 +264,24 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       alignItems: "center",
       gap: 12,
     },
+    checkbox: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.surface,
+    },
+    checkboxSelected: {
+      backgroundColor: colors.tint,
+      borderColor: colors.tint,
+    },
     saleId: {
-      fontSize: 14,
       color: colors.text,
+      fontSize: 14,
+      fontWeight: "700",
       fontFamily: fonts.sans,
     },
     saleDetailsCard: {
@@ -288,9 +293,10 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       gap: 12,
     },
     saleDetailsTitle: {
+      textAlign: "center",
       fontSize: 16,
       fontFamily: fonts.rounded,
-      fontWeight: "600",
+      fontWeight: "700",
       color: colors.text,
     },
     itemsList: {

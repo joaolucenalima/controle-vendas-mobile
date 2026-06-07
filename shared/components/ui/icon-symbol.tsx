@@ -34,6 +34,7 @@ const MAPPING = {
   "gearshape.fill": "settings",
   "printer.fill.and.paper.fill": "print",
   printer: "print",
+  checkmark: "check",
 } as IconMapping;
 
 /**

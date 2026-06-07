@@ -101,7 +101,7 @@ export function formatSaleToPrint(sale: SaleWithItems): string {
   // Cabeçalho da tabela — negrito
   push(
     CMD.BOLD_ON,
-    `QTD PRODUTO ${formatTableCell("VALOR (R$)", 20, "right")}`,
+    `QTD  PRODUTO ${formatTableCell("VALOR (R$)", 19, "right")}`,
     CMD.BOLD_OFF,
     CMD.FEED,
   );
