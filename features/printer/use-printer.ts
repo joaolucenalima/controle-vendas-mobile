@@ -70,6 +70,7 @@ export function usePrinter() {
         { text: "Cancelar", style: "cancel" },
         { text: "Tentar novamente", onPress: () => print(payload) },
       ]);
+      setTimeout(() => setStatus("idle"), 2000);
     } finally {
       if (device) {
         try {

@@ -25,7 +25,7 @@ export default function SalePrintScreen() {
 
   const { sales, loadSales, getSaleById } = useSaleStore();
   const { receiptTitle, loadReceiptTitle } = usePrinterStore();
-  const { print } = usePrinter();
+  const { print, status } = usePrinter();
 
   async function handleSelectSale(saleId: number) {
     setSelectedSaleId(saleId);
@@ -127,6 +127,14 @@ export default function SalePrintScreen() {
     }
   }, [sales, selectedSaleId]);
 
+  const statusTextMap: Record<string, string> = {
+    idle: "Imprimir venda",
+    connecting: "Conectando à impressora...",
+    printing: "Imprimindo...",
+    success: "Venda impressa com sucesso!",
+    error: "Erro ao imprimir. Verifique a conexão.",
+  };
+
   return (
     <StackFormWrapper title="Impressão de Venda">
       <View style={styles.card}>
@@ -203,9 +211,9 @@ export default function SalePrintScreen() {
       )}
 
       <Button
-        label="Imprimir venda"
+        label={statusTextMap[status] || "Imprimir venda"}
         onPress={() => printSelectedSale()}
-        disabled={!selectedSaleDetails}
+        disabled={!selectedSaleDetails || status !== "idle"}
         size="md"
       />
     </StackFormWrapper>
