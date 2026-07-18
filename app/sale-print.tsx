@@ -7,12 +7,16 @@ import { usePrinterStore } from "@/features/printer/printer-store";
 import { usePrinter } from "@/features/printer/use-printer";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { Sale, SaleWithItems } from "@/features/sales/sale.types";
-import { Button, IconSymbol, ThemedText } from "@/shared/components";
+import { Button, DatePickerField, IconSymbol, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
 import { formatCentsToCurrency } from "@/shared/utils/format-cents-to-currency";
-import { formatDateToDisplay } from "@/shared/utils/format-date";
+import {
+  dateFilterKeyToSoldAtIso,
+  formatDateFilterDisplay,
+  formatDateToDisplay,
+} from "@/shared/utils/format-date";
 
 export default function SalePrintScreen() {
   const theme = useTheme();
@@ -22,6 +26,7 @@ export default function SalePrintScreen() {
   const [selectedSaleDetails, setSelectedSaleDetails] = useState<SaleWithItems | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [customPrintDate, setCustomPrintDate] = useState("");
 
   const { sales, loadSales, getSaleById } = useSaleStore();
   const { receiptTitle, loadReceiptTitle } = usePrinterStore();
@@ -35,6 +40,7 @@ export default function SalePrintScreen() {
       setIsLoadingDetails(true);
       const details = await getSaleById(saleId);
       setSelectedSaleDetails(details);
+      setCustomPrintDate(details.sold_at.split("T")[0]);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Falha ao carregar itens";
       Alert.alert("Erro", message);
@@ -83,7 +89,14 @@ export default function SalePrintScreen() {
       return;
     }
 
-    print(formatSaleToPrint(selectedSaleDetails));
+    print(
+      formatSaleToPrint({
+        ...selectedSaleDetails,
+        sold_at: customPrintDate
+          ? dateFilterKeyToSoldAtIso(customPrintDate)
+          : selectedSaleDetails.sold_at,
+      }),
+    );
   }
 
   useFocusEffect(
@@ -161,53 +174,68 @@ export default function SalePrintScreen() {
       </View>
 
       {selectedSaleDetails && (
-        <View style={styles.saleDetailsCard}>
-          {receiptTitle && <ThemedText style={styles.saleDetailsTitle}>{receiptTitle}</ThemedText>}
+        <>
+          <View>
+            <DatePickerField
+              label="Data para impressão (opcional)"
+              value={customPrintDate}
+              onChange={(date) => setCustomPrintDate(date)}
+            />
+          </View>
 
-          <ThemedText style={styles.saleDetailsDate}>
-            Data da venda: {formatDateToDisplay(selectedSaleDetails.sold_at)}
-          </ThemedText>
+          <View style={styles.saleDetailsCard}>
+            {receiptTitle && (
+              <ThemedText style={styles.saleDetailsTitle}>{receiptTitle}</ThemedText>
+            )}
 
-          <View style={styles.totalSeparator} />
+            <ThemedText style={styles.saleDetailsDate}>
+              Data da venda:{" "}
+              {customPrintDate
+                ? formatDateFilterDisplay(customPrintDate)
+                : formatDateToDisplay(selectedSaleDetails.sold_at)}
+            </ThemedText>
 
-          {isLoadingDetails ? (
-            <View style={styles.itemsLoadingWrap}>
-              <ActivityIndicator color={theme.colors.tint} />
-              <ThemedText style={styles.itemsLoadingText}>Carregando itens...</ThemedText>
-            </View>
-          ) : selectedSaleDetails?.items.length ? (
-            <View style={styles.itemsList}>
-              {selectedSaleDetails.items.map((item) => (
-                <View key={item.id} style={styles.itemRow}>
-                  <View style={{ flex: 1 }}>
-                    <ThemedText style={styles.itemName}>{item.product_name}</ThemedText>
-                    <ThemedText style={styles.itemMeta}>
-                      Qtd. {item.quantity} - {formatCentsToCurrency(item.unit_price_in_cents)}
+            <View style={styles.totalSeparator} />
+
+            {isLoadingDetails ? (
+              <View style={styles.itemsLoadingWrap}>
+                <ActivityIndicator color={theme.colors.tint} />
+                <ThemedText style={styles.itemsLoadingText}>Carregando itens...</ThemedText>
+              </View>
+            ) : selectedSaleDetails?.items.length ? (
+              <View style={styles.itemsList}>
+                {selectedSaleDetails.items.map((item) => (
+                  <View key={item.id} style={styles.itemRow}>
+                    <View style={{ flex: 1 }}>
+                      <ThemedText style={styles.itemName}>{item.product_name}</ThemedText>
+                      <ThemedText style={styles.itemMeta}>
+                        Qtd. {item.quantity} - {formatCentsToCurrency(item.unit_price_in_cents)}
+                      </ThemedText>
+                    </View>
+
+                    <ThemedText style={styles.itemSubtotal}>
+                      {formatCentsToCurrency(item.subtotal_in_cents)}
                     </ThemedText>
                   </View>
+                ))}
 
-                  <ThemedText style={styles.itemSubtotal}>
-                    {formatCentsToCurrency(item.subtotal_in_cents)}
+                <View style={styles.totalSeparator} />
+
+                <View style={styles.itemRow}>
+                  <View style={{ flex: 1 }}>
+                    <ThemedText style={styles.totalText}>Total</ThemedText>
+                  </View>
+
+                  <ThemedText style={styles.totalText}>
+                    {formatCentsToCurrency(selectedSaleDetails.total_in_cents)}
                   </ThemedText>
                 </View>
-              ))}
-
-              <View style={styles.totalSeparator} />
-
-              <View style={styles.itemRow}>
-                <View style={{ flex: 1 }}>
-                  <ThemedText style={styles.totalText}>Total</ThemedText>
-                </View>
-
-                <ThemedText style={styles.totalText}>
-                  {formatCentsToCurrency(selectedSaleDetails.total_in_cents)}
-                </ThemedText>
               </View>
-            </View>
-          ) : (
-            <ThemedText style={styles.itemsEmpty}>Nenhum item para exibir.</ThemedText>
-          )}
-        </View>
+            ) : (
+              <ThemedText style={styles.itemsEmpty}>Nenhum item para exibir.</ThemedText>
+            )}
+          </View>
+        </>
       )}
 
       <Button
@@ -400,3 +428,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.sans,
     },
   });
+

@@ -35,6 +35,7 @@ export function getDateRangeFilterParams(value: DateRangeFilterValue) {
 export function DateRangeFilter({ value, onApply, onClear }: DateRangeFilterProps) {
   const styles = useStyles(createStyles);
   const [draftValue, setDraftValue] = useState(value);
+
   const initialDateLimit = parseDateFilterKey(draftValue.finalDate) ?? undefined;
   const finalDateLimit = parseDateFilterKey(draftValue.initialDate) ?? undefined;
 
