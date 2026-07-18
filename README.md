@@ -1,51 +1,104 @@
-# Welcome to your Expo app 👋
+# Controle de vendas
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Como rodar o app
 
-## Get started
+> **Importante**
+>
+> Este projeto utiliza **módulos nativos**. Por isso, **Expo Go** pode não funcionar corretamente e o emulador pode não reproduzir todos os recursos. O recomendado é utilizar um **dispositivo Android físico** conectado via USB.
 
-1. Install dependencies
+### Pré-requisitos
 
-   ```bash
-   npm install
-   ```
+- Node.js
+- Android Studio (SDK e Platform Tools)
+- Java 21 (ou 17)
+- ADB configurado no `PATH`
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## #Instalação
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Rodando em desenvolvimento
 
-## Learn more
+Conecte o dispositivo Android via USB e verifique se ele foi reconhecido:
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+adb devices
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android and iOS.
+Instale o app de desenvolvimento:
 
-## Join the community
+```bash
+npx expo run:android
+```
 
-Join our community of developers creating universal apps.
+Inicie o servidor Metro:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npx expo start --dev-client
+```
+
+Caso necessário, faça o redirecionamento da porta:
+
+```bash
+adb reverse tcp:8081 tcp:8081
+```
+
+Abra o aplicativo no dispositivo. As alterações no código serão atualizadas automaticamente via **Fast Refresh**.
+
+## Gerando um build
+
+### APK de debug
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+O APK será gerado em:
+
+```text
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+### APK de release
+
+```bash
+cd android
+./gradlew assembleRelease
+```
+
+O APK será gerado em:
+
+```text
+android/app/build/outputs/apk/release/app-release.apk
+```
+
+### Android App Bundle (AAB)
+
+```bash
+cd android
+./gradlew bundleRelease
+```
+
+O arquivo será gerado em:
+
+```text
+android/app/build/outputs/bundle/release/app-release.aab
+```
+
+## Problemas comuns
+
+### `Unsupported class file major version 69`
+
+Esse erro ocorre ao utilizar **Java 25**. Utilize **Java 21** (ou 17) para compilar o projeto.
+
+### Dispositivo não aparece
+
+Verifique se a depuração USB está habilitada e confirme a conexão:
+
+```bash
+adb devices
+```
 
