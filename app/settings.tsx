@@ -261,17 +261,18 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       marginTop: 4,
     },
     bluetoothButton: {
-      backgroundColor: "#0082FC",
       borderRadius: 12,
+      borderWidth: 1,
+      borderColor: "#0082FC",
       paddingVertical: 12,
       alignItems: "center",
       justifyContent: "center",
       marginBottom: 8,
     },
     bluetoothButtonLabel: {
-      color: "white",
+      color: "#0082FC",
       fontFamily: fonts.rounded,
-      fontWeight: "600",
+      fontWeight: 600,
       fontSize: 14,
     },
     unavailableCard: {
@@ -296,3 +297,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       color: colors.textMuted,
     },
   });
+

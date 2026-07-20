@@ -13,7 +13,7 @@
 - Java 21 (ou 17)
 - ADB configurado no `PATH`
 
-## #Instalação
+### Instalação
 
 ```bash
 npm install

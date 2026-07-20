@@ -46,6 +46,9 @@ export function ConnectToPrinterView({
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Falha ao obter dispositivos Bluetooth";
+
+      if (message.includes("already in discovery mode")) return;
+
       Alert.alert("Erro", message);
     } finally {
       setIsLoadingDevices(false);
@@ -135,13 +138,11 @@ export function ConnectToPrinterView({
             </View>
 
             {isLoadingDevices && (
-              <ThemedText style={[styles.description, { textAlign: "center" }]}>
-                Buscando dispositivos...
-              </ThemedText>
+              <ThemedText style={styles.description}>Buscando dispositivos...</ThemedText>
             )}
 
             {devices.length > 0 && (
-              <ThemedText style={styles.description}>
+              <ThemedText style={[styles.description, { textAlign: "left" }]}>
                 Clique no dispositivo para salvar suas informações de conexão.
               </ThemedText>
             )}
@@ -164,9 +165,11 @@ export function ConnectToPrinterView({
                   {item.bonded && <ThemedText style={styles.bonded}>Pareado</ThemedText>}
                 </Pressable>
               )}
-              ListEmptyComponent={() => (
-                <ThemedText style={styles.description}>Nenhum dispositivo encontrado.</ThemedText>
-              )}
+              ListEmptyComponent={() =>
+                isLoadingDevices ? null : (
+                  <ThemedText style={styles.description}>Nenhum dispositivo encontrado.</ThemedText>
+                )
+              }
             />
           </View>
         </KeyboardAvoidingView>
@@ -203,7 +206,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       height: 4,
       borderRadius: 999,
       backgroundColor: colors.border,
-      marginBottom: 8,
+      marginBottom: 12,
     },
     header: {
       flexDirection: "row",
@@ -212,7 +215,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       gap: 8,
     },
     title: {
-      fontSize: 20,
+      fontSize: 24,
       fontFamily: fonts.rounded,
       fontWeight: "700",
       color: colors.text,
@@ -232,6 +235,7 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     description: {
       fontSize: 14,
       fontFamily: fonts.sans,
+      textAlign: "center",
       color: colors.textMuted,
     },
     deviceItem: {
@@ -262,3 +266,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontWeight: "700",
     },
   });
+
