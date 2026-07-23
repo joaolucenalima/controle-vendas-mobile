@@ -1,13 +1,14 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { formatSaleToPrint } from "@/features/printer/format-sale-to-print";
 import { usePrinterStore } from "@/features/printer/printer-store";
 import { usePrinter } from "@/features/printer/use-printer";
 import { useSaleStore } from "@/features/sales/sale-store";
-import type { Sale, SaleWithItems } from "@/features/sales/sale.types";
-import { Button, DatePickerField, IconSymbol, ThemedText } from "@/shared/components";
+import type { SaleWithItems } from "@/features/sales/sale.types";
+import { Button, DatePickerField, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { StackFormWrapper } from "@/shared/layouts/stack-form-wrapper";
@@ -17,415 +18,223 @@ import {
   formatDateFilterDisplay,
   formatDateToDisplay,
 } from "@/shared/utils/format-date";
+import { parseRouteId } from "@/shared/utils/parse-route-id";
 
 export default function SalePrintScreen() {
+  const router = useRouter();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const parsedId = parseRouteId(id);
   const theme = useTheme();
   const styles = useStyles(createStyles);
 
-  const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null);
-  const [selectedSaleDetails, setSelectedSaleDetails] = useState<SaleWithItems | null>(null);
+  const [sale, setSale] = useState<SaleWithItems | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [customPrintDate, setCustomPrintDate] = useState("");
 
-  const { sales, loadSales, getSaleById } = useSaleStore();
+  const { getSaleById } = useSaleStore();
   const { receiptTitle, loadReceiptTitle } = usePrinterStore();
   const { print, status } = usePrinter();
-
-  async function handleSelectSale(saleId: number) {
-    setSelectedSaleId(saleId);
-    setSelectedSaleDetails(null);
-
-    try {
-      setIsLoadingDetails(true);
-      const details = await getSaleById(saleId);
-      setSelectedSaleDetails(details);
-      setCustomPrintDate(details.sold_at.split("T")[0]);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Falha ao carregar itens";
-      Alert.alert("Erro", message);
-    } finally {
-      setIsLoadingDetails(false);
-    }
-  }
-
-  function renderSaleCard(sale: Sale) {
-    const isSelected = sale.id === selectedSaleId;
-
-    return (
-      <Pressable
-        key={sale.id}
-        accessibilityRole="button"
-        onPress={() => handleSelectSale(sale.id)}
-        style={({ pressed }) => [
-          styles.saleCard,
-          isSelected && styles.saleCardSelected,
-          pressed && styles.saleCardPressed,
-        ]}
-      >
-        <View style={styles.saleMeta}>
-          <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-            {isSelected ? (
-              <IconSymbol size={18} name="checkmark" color={theme.colors.background} />
-            ) : null}
-          </View>
-
-          <View>
-            <ThemedText style={styles.saleId}>Venda #{sale.id}</ThemedText>
-            <ThemedText style={styles.saleDate}>{formatDateToDisplay(sale.sold_at)}</ThemedText>
-          </View>
-        </View>
-
-        <ThemedText style={styles.saleTotal}>
-          {formatCentsToCurrency(sale.total_in_cents)}
-        </ThemedText>
-      </Pressable>
-    );
-  }
-
-  async function printSelectedSale() {
-    if (!selectedSaleDetails) {
-      Alert.alert("Nenhuma venda selecionada", "Por favor, selecione uma venda para imprimir.");
-      return;
-    }
-
-    print(
-      formatSaleToPrint({
-        ...selectedSaleDetails,
-        sold_at: customPrintDate
-          ? dateFilterKeyToSoldAtIso(customPrintDate)
-          : selectedSaleDetails.sold_at,
-      }),
-    );
-  }
 
   useFocusEffect(
     useCallback(() => {
       let isMounted = true;
 
-      async function fetchSales() {
+      async function loadSale() {
+        setSale(null);
+        setErrorMessage(null);
+
+        if (!parsedId) {
+          setErrorMessage("A venda informada é inválida ou não foi selecionada.");
+          setIsLoading(false);
+          return;
+        }
+
         try {
           setIsLoading(true);
-          await Promise.all([loadSales(), loadReceiptTitle()]);
-        } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : "Falha ao carregar vendas";
+          const [loadedSale] = await Promise.all([getSaleById(parsedId), loadReceiptTitle()]);
+
           if (isMounted) {
-            Alert.alert("Erro", message);
+            setSale(loadedSale);
+            setCustomPrintDate(loadedSale.sold_at.split("T")[0]);
+          }
+        } catch (error: unknown) {
+          if (isMounted) {
+            setErrorMessage(error instanceof Error ? error.message : "Falha ao carregar a venda");
           }
         } finally {
-          if (isMounted) {
-            setIsLoading(false);
-          }
+          if (isMounted) setIsLoading(false);
         }
       }
 
-      fetchSales();
-
+      loadSale();
       return () => {
         isMounted = false;
       };
-    }, [loadSales, loadReceiptTitle]),
+    }, [getSaleById, loadReceiptTitle, parsedId]),
   );
 
-  useEffect(() => {
-    if (!selectedSaleId) {
-      setSelectedSaleDetails(null);
-      return;
-    }
+  function printSale() {
+    if (!sale) return;
 
-    const stillExists = sales.some((sale) => sale.id === selectedSaleId);
-    if (!stillExists) {
-      setSelectedSaleId(null);
-      setSelectedSaleDetails(null);
-    }
-  }, [sales, selectedSaleId]);
+    print(
+      formatSaleToPrint({
+        ...sale,
+        sold_at: customPrintDate ? dateFilterKeyToSoldAtIso(customPrintDate) : sale.sold_at,
+      }),
+    );
+  }
 
-  const statusTextMap: Record<string, string> = {
+  const statusTextMap = {
     idle: "Imprimir venda",
     connecting: "Conectando à impressora...",
     printing: "Imprimindo...",
     success: "Venda impressa com sucesso!",
     error: "Erro ao imprimir. Verifique a conexão.",
-  };
+  } as const;
 
   return (
-    <StackFormWrapper title="Impressão de Venda">
-      <View style={styles.card}>
-        <ThemedText style={styles.cardTitle}>Selecione a venda</ThemedText>
-        <ThemedText style={styles.cardDescription}>
-          Escolha uma venda para enviar para a impressora térmica.
-        </ThemedText>
-
-        {isLoading ? (
-          <View style={styles.loadingWrap}>
-            <ActivityIndicator color={theme.colors.tint} />
-            <ThemedText style={styles.loadingText}>Carregando vendas...</ThemedText>
-          </View>
-        ) : sales.length ? (
-          <View style={styles.saleList}>{sales.map(renderSaleCard)}</View>
-        ) : (
-          <View style={styles.emptyState}>
-            <ThemedText style={styles.emptyTitle}>Nenhuma venda encontrada</ThemedText>
-            <ThemedText style={styles.emptySubtitle}>
-              Registre uma venda para habilitar a impressão.
-            </ThemedText>
-          </View>
-        )}
-      </View>
-
-      {selectedSaleDetails && (
+    <StackFormWrapper title={sale ? `Imprimir venda #${sale.id}` : "Imprimir venda"}>
+      {isLoading ? (
+        <View style={styles.loadingState}>
+          <ActivityIndicator size="large" color={theme.colors.tint} />
+          <ThemedText style={styles.loadingText}>Carregando detalhes da venda...</ThemedText>
+        </View>
+      ) : errorMessage ? (
+        <View style={styles.errorCard}>
+          <ThemedText style={styles.errorTitle}>Não foi possível abrir a venda</ThemedText>
+          <ThemedText style={styles.errorDescription}>{errorMessage}</ThemedText>
+          <Button label="Voltar para vendas" onPress={() => router.replace("/sales")} size="md" />
+        </View>
+      ) : sale ? (
         <>
-          <View>
-            <DatePickerField
-              label="Data para impressão (opcional)"
-              value={customPrintDate}
-              onChange={(date) => setCustomPrintDate(date)}
-            />
+          <View style={styles.introCard}>
+            <View>
+              <ThemedText style={styles.saleLabel}>VENDA #{sale.id}</ThemedText>
+              <ThemedText style={styles.saleDate}>{formatDateToDisplay(sale.sold_at)}</ThemedText>
+            </View>
+            <ThemedText style={styles.saleTotal}>
+              {formatCentsToCurrency(sale.total_in_cents)}
+            </ThemedText>
           </View>
 
-          <View style={styles.saleDetailsCard}>
-            {receiptTitle && (
-              <ThemedText style={styles.saleDetailsTitle}>{receiptTitle}</ThemedText>
-            )}
+          <DatePickerField
+            label="Data para impressão (opcional)"
+            value={customPrintDate}
+            onChange={setCustomPrintDate}
+          />
 
-            <ThemedText style={styles.saleDetailsDate}>
-              Data da venda:{" "}
-              {customPrintDate
+          <View style={styles.receiptCard}>
+            <ThemedText style={styles.previewLabel}>PRÉVIA DO RECIBO</ThemedText>
+            {receiptTitle ? (
+              <ThemedText style={styles.receiptTitle}>{receiptTitle}</ThemedText>
+            ) : null}
+            <ThemedText style={styles.receiptDate}>
+              Data da venda: {customPrintDate
                 ? formatDateFilterDisplay(customPrintDate)
-                : formatDateToDisplay(selectedSaleDetails.sold_at)}
+                : formatDateToDisplay(sale.sold_at)}
             </ThemedText>
 
-            <View style={styles.totalSeparator} />
+            <View style={styles.separator} />
 
-            {isLoadingDetails ? (
-              <View style={styles.itemsLoadingWrap}>
-                <ActivityIndicator color={theme.colors.tint} />
-                <ThemedText style={styles.itemsLoadingText}>Carregando itens...</ThemedText>
-              </View>
-            ) : selectedSaleDetails?.items.length ? (
+            {sale.items.length ? (
               <View style={styles.itemsList}>
-                {selectedSaleDetails.items.map((item) => (
-                  <View key={item.id} style={styles.itemRow}>
-                    <View style={{ flex: 1 }}>
+                {sale.items.map((item, index) => (
+                  <View key={item.id} style={[styles.itemRow, index > 0 && styles.itemBorder]}>
+                    <View style={styles.itemContent}>
                       <ThemedText style={styles.itemName}>{item.product_name}</ThemedText>
                       <ThemedText style={styles.itemMeta}>
-                        Qtd. {item.quantity} - {formatCentsToCurrency(item.unit_price_in_cents)}
+                        Qtd. {item.quantity} · {formatCentsToCurrency(item.unit_price_in_cents)}
                       </ThemedText>
                     </View>
-
                     <ThemedText style={styles.itemSubtotal}>
                       {formatCentsToCurrency(item.subtotal_in_cents)}
                     </ThemedText>
                   </View>
                 ))}
-
-                <View style={styles.totalSeparator} />
-
-                <View style={styles.itemRow}>
-                  <View style={{ flex: 1 }}>
-                    <ThemedText style={styles.totalText}>Total</ThemedText>
-                  </View>
-
-                  <ThemedText style={styles.totalText}>
-                    {formatCentsToCurrency(selectedSaleDetails.total_in_cents)}
-                  </ThemedText>
-                </View>
               </View>
             ) : (
-              <ThemedText style={styles.itemsEmpty}>Nenhum item para exibir.</ThemedText>
+              <ThemedText style={styles.emptyItems}>Nenhum item para exibir.</ThemedText>
             )}
-          </View>
-        </>
-      )}
 
-      <Button
-        label={statusTextMap[status] || "Imprimir venda"}
-        onPress={() => printSelectedSale()}
-        disabled={!selectedSaleDetails || status !== "idle"}
-        size="md"
-      />
+            <View style={styles.separator} />
+            <View style={styles.totalRow}>
+              <ThemedText style={styles.totalText}>Total</ThemedText>
+              <ThemedText style={styles.totalText}>
+                {formatCentsToCurrency(sale.total_in_cents)}
+              </ThemedText>
+            </View>
+          </View>
+
+          <Button
+            label={statusTextMap[status]}
+            onPress={printSale}
+            disabled={status !== "idle"}
+            size="md"
+          />
+        </>
+      ) : null}
     </StackFormWrapper>
   );
 }
 
 const createStyles = ({ colors, fonts }: StylesProps) =>
   StyleSheet.create({
-    card: {
-      borderRadius: 18,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.surfaceElevated,
-      padding: 16,
-      gap: 12,
-    },
-    cardTitle: {
-      fontSize: 16,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-      color: colors.text,
-    },
-    cardDescription: {
-      fontSize: 14,
-      fontFamily: fonts.sans,
-      color: colors.textMuted,
-    },
-    saleList: {
-      gap: 10,
-      maxHeight: 400,
-    },
-    saleCard: {
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.surface,
-      padding: 14,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-    },
-    saleCardSelected: {
-      borderColor: colors.tint,
-      backgroundColor: colors.surfaceElevated,
-    },
-    saleCardPressed: {
-      opacity: 0.85,
-    },
-    saleDate: {
-      fontSize: 13,
-      color: colors.textMuted,
-      fontFamily: fonts.sans,
-    },
-    saleTotal: {
-      fontSize: 16,
-      color: colors.text,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-    },
-    saleMeta: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-    },
-    checkbox: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
+    loadingState: {
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: colors.surface,
+      gap: 14,
+      paddingVertical: 72,
     },
-    checkboxSelected: {
-      backgroundColor: colors.tint,
-      borderColor: colors.tint,
-    },
-    saleId: {
-      color: colors.text,
-      fontSize: 14,
-      fontWeight: "700",
-      fontFamily: fonts.sans,
-    },
-    saleDetailsCard: {
+    loadingText: { color: colors.textMuted, fontFamily: fonts.sans },
+    errorCard: {
+      padding: 20,
+      gap: 12,
       borderRadius: 18,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.surfaceElevated,
-      padding: 16,
-      gap: 8,
     },
-    saleDetailsTitle: {
-      textAlign: "center",
-      fontSize: 18,
-      fontFamily: fonts.rounded,
-      fontWeight: "700",
-      color: colors.text,
-    },
-    saleDetailsDate: {
-      textAlign: "center",
-      fontSize: 16,
-      fontFamily: fonts.rounded,
-      fontWeight: "700",
-      color: colors.text,
-    },
-    itemsList: {
-      gap: 12,
-    },
-    itemRow: {
+    errorTitle: { fontSize: 18, fontWeight: "700", color: colors.text, fontFamily: fonts.rounded },
+    errorDescription: { color: colors.textMuted, fontFamily: fonts.sans, lineHeight: 20 },
+    introCard: {
       flexDirection: "row",
+      alignItems: "center",
       justifyContent: "space-between",
-      alignItems: "center",
-      gap: 12,
+      gap: 16,
+      padding: 16,
+      borderRadius: 18,
+      backgroundColor: colors.tintSoft,
     },
-    itemName: {
-      fontSize: 15,
-      color: colors.text,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
+    saleLabel: { fontSize: 12, fontWeight: "700", color: colors.tint, fontFamily: fonts.rounded },
+    saleDate: { marginTop: 5, fontSize: 14, color: colors.textMuted, fontFamily: fonts.sans },
+    saleTotal: { fontSize: 20, fontWeight: "700", color: colors.text, fontFamily: fonts.rounded },
+    receiptCard: {
+      padding: 16,
+      gap: 10,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceElevated,
     },
-    itemMeta: {
-      fontSize: 12,
-      color: colors.textMuted,
-      fontFamily: fonts.sans,
-    },
-    itemSubtotal: {
-      fontSize: 14,
-      color: colors.text,
-      fontFamily: fonts.rounded,
-      fontWeight: "500",
-    },
-    totalSeparator: {
-      height: 1,
-      backgroundColor: colors.textMuted,
-      marginVertical: 4,
-    },
-    totalText: {
-      fontSize: 16,
-      color: colors.text,
-      fontFamily: fonts.rounded,
+    previewLabel: {
+      fontSize: 11,
       fontWeight: "700",
-    },
-    itemsEmpty: {
-      fontSize: 13,
+      letterSpacing: 0.8,
       color: colors.textMuted,
       fontFamily: fonts.sans,
     },
-    itemsLoadingWrap: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 10,
-      paddingVertical: 8,
-    },
-    itemsLoadingText: {
-      color: colors.textMuted,
-      fontFamily: fonts.sans,
-    },
-    emptyState: {
-      paddingVertical: 24,
-      alignItems: "center",
-      gap: 6,
-    },
-    emptyTitle: {
-      fontSize: 15,
-      color: colors.text,
-      fontFamily: fonts.rounded,
-      fontWeight: "600",
-    },
-    emptySubtitle: {
-      fontSize: 13,
-      color: colors.textMuted,
-      fontFamily: fonts.sans,
-      textAlign: "center",
-    },
-    loadingWrap: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 10,
-      paddingVertical: 8,
-    },
-    loadingText: {
-      color: colors.textMuted,
-      fontFamily: fonts.sans,
-    },
+    receiptTitle: { textAlign: "center", fontSize: 18, fontWeight: "700", color: colors.text, fontFamily: fonts.rounded },
+    receiptDate: { textAlign: "center", fontSize: 14, color: colors.textMuted, fontFamily: fonts.sans },
+    separator: { height: 1, backgroundColor: colors.border, marginVertical: 4 },
+    itemsList: { gap: 0 },
+    itemRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 },
+    itemBorder: { borderTopWidth: 1, borderTopColor: colors.border },
+    itemContent: { flex: 1, gap: 4 },
+    itemName: { fontSize: 15, fontWeight: "600", color: colors.text, fontFamily: fonts.rounded },
+    itemMeta: { fontSize: 12, color: colors.textMuted, fontFamily: fonts.sans },
+    itemSubtotal: { fontSize: 14, fontWeight: "600", color: colors.text, fontFamily: fonts.rounded },
+    emptyItems: { paddingVertical: 12, color: colors.textMuted, fontFamily: fonts.sans },
+    totalRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+    totalText: { fontSize: 17, fontWeight: "700", color: colors.text, fontFamily: fonts.rounded },
   });
-

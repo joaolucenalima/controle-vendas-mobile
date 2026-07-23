@@ -34,6 +34,8 @@ const MAPPING = {
   "gearshape.fill": "settings",
   "printer.fill.and.paper.fill": "print",
   printer: "print",
+  pencil: "edit",
+  "icloud.and.arrow.up.fill": "backup",
   checkmark: "check",
   "arrow.triangle.2.circlepath": "refresh",
 } as IconMapping;
