@@ -5,9 +5,9 @@ import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Alert, StyleSheet, TextInput, View } from "react-native";
 
 import { MaterialService } from "@/features/materials/material-service";
-import { materialFormSchema, type MaterialFormValues } from "@/features/materials/schema";
 import { useMaterialStore } from "@/features/materials/material-store";
 import type { Material } from "@/features/materials/material.types";
+import { materialFormSchema, type MaterialFormValues } from "@/features/materials/schema";
 import {
   Button,
   ConfirmationModal,
@@ -63,8 +63,7 @@ export default function MaterialsForm() {
         setMaterial(loaded);
         form.reset({
           name: loaded.name,
-          price:
-            loaded.price_in_cents !== null ? formatCentsToCurrency(loaded.price_in_cents) : "",
+          price: loaded.price_in_cents !== null ? formatCentsToCurrency(loaded.price_in_cents) : "",
         });
       })
       .catch((error: unknown) => {
@@ -174,7 +173,6 @@ export default function MaterialsForm() {
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
-                    placeholder="Ex: Madeira tratada"
                     placeholderTextColor={theme.colors.textMuted}
                     style={[styles.input, fieldState.error && styles.inputError]}
                     autoCapitalize="words"
@@ -278,3 +276,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       marginTop: 10,
     },
   });
+

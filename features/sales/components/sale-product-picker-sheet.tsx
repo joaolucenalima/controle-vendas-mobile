@@ -66,7 +66,7 @@ export function SaleProductPickerSheet({
           style={styles.keyboardAvoidingView}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom + 12, 16) }]}>
             <View style={styles.handle} />
 
             <View style={styles.header}>
@@ -230,3 +230,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontWeight: "600",
     },
   });
+

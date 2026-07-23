@@ -7,9 +7,9 @@ import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { ProductService } from "@/features/products/product-service";
-import { productFormSchema, type ProductFormValues } from "@/features/products/schema";
 import { useProductStore } from "@/features/products/product-store";
 import type { Product } from "@/features/products/product.types";
+import { productFormSchema, type ProductFormValues } from "@/features/products/schema";
 import {
   Button,
   ConfirmationModal,
@@ -211,7 +211,6 @@ export default function ProductsForm() {
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
-                    placeholder="Ex: Café especial"
                     placeholderTextColor={theme.colors.textMuted}
                     style={[styles.input, fieldState.error && styles.inputError]}
                     autoCapitalize="words"
@@ -459,3 +458,4 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.sans,
     },
   });
+
