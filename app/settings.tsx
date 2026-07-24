@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, DevSettings, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { resetDatabase } from "@/database/reset-database";
+import { GoogleDriveBackupCard } from "@/features/google-drive-backup/ui/google-drive-backup-card";
 import { usePrinterStore } from "@/features/printer/printer-store";
 import { ConnectToPrinterView } from "@/features/settings/components/connect-to-printer";
 import { Button, IconSymbol, ThemedText } from "@/shared/components";
@@ -116,12 +117,14 @@ export default function SettingsScreen() {
         </View>
       ) : null}
 
+      <GoogleDriveBackupCard />
+
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <View style={styles.iconContainer}>
             <IconSymbol color={theme.colors.text} name="printer" />
           </View>
-          <ThemedText style={styles.cardTitle}>Impressora Térmica</ThemedText>
+          <ThemedText style={styles.cardTitle}>Impressora térmica</ThemedText>
         </View>
 
         <View style={styles.section}>
@@ -297,4 +300,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       color: colors.textMuted,
     },
   });
-
