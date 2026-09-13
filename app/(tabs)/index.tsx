@@ -318,6 +318,7 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
     },
     title: {
       fontSize: 28,
+      lineHeight: 36,
       fontWeight: "bold",
       color: colors.text,
       fontFamily: fonts.rounded,
@@ -384,7 +385,7 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
       fontWeight: "600",
       fontFamily: fonts.rounded,
     },
-    profitValue: { fontSize: 30, fontWeight: "700", fontFamily: fonts.rounded },
+    profitValue: { fontSize: 30, lineHeight: 38, fontWeight: "700", fontFamily: fonts.rounded },
     marginRow: { flexDirection: "row", alignItems: "center", gap: 6 },
     statusDot: { width: 8, height: 8, borderRadius: 4 },
     statusDotPositive: { backgroundColor: colors.green },
@@ -587,4 +588,3 @@ const getStyles = ({ colors, fonts }: StylesProps) =>
       fontFamily: fonts.rounded,
     },
   });
-
