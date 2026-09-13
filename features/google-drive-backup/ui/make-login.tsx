@@ -1,17 +1,20 @@
-import {
-  GoogleSignin,
-  isErrorWithCode,
-  statusCodes,
-  type User,
-} from "@react-native-google-signin/google-signin";
+import type { User } from "@react-native-google-signin/google-signin";
 import { useCallback, useState } from "react";
-import { Platform } from "react-native";
+import { Platform, TurboModuleRegistry } from "react-native";
 
 import { GOOGLE_CONFIG } from "@/shared/config/google";
 
 const GOOGLE_DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.appdata"];
 
-GoogleSignin.configure({
+// Importing the package enforces native module availability, even before login.
+const googleSignIn =
+  (Platform.OS === "android" || Platform.OS === "ios") &&
+  TurboModuleRegistry.get("RNGoogleSignin") !== null
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- Must check the native module before evaluating the package.
+    ? (require("@react-native-google-signin/google-signin") as typeof import("@react-native-google-signin/google-signin"))
+    : null;
+
+googleSignIn?.GoogleSignin.configure({
   scopes: GOOGLE_DRIVE_SCOPES,
   webClientId: GOOGLE_CONFIG.webClientId,
   iosClientId: GOOGLE_CONFIG.iosClientId,
@@ -42,10 +45,11 @@ function mapUser(user: User): GoogleUser {
 
 export function useGoogleDriveLogin() {
   const isConfigured = hasPlatformClientId();
-  const currentUser = GoogleSignin.getCurrentUser();
-  const [user, setUser] = useState<GoogleUser | null>(
-    currentUser ? mapUser(currentUser) : null,
-  );
+  const isAvailable = googleSignIn !== null;
+  const [user, setUser] = useState<GoogleUser | null>(() => {
+    const currentUser = googleSignIn?.GoogleSignin.getCurrentUser();
+    return currentUser ? mapUser(currentUser) : null;
+  });
 
   const disconnect = useCallback(() => {
     setUser(null);
@@ -53,10 +57,14 @@ export function useGoogleDriveLogin() {
 
   const getAccessToken = useCallback(
     async (forceLogin = false) => {
+      if (!googleSignIn) {
+        throw new Error("O login Google não está disponível nesta versão do aplicativo. Instale uma versão com suporte ao Google Drive.");
+      }
       if (!isConfigured) {
         throw new Error("Configure o cliente OAuth do Google para usar o backup.");
       }
 
+      const { GoogleSignin, isErrorWithCode, statusCodes } = googleSignIn;
       try {
         if (Platform.OS === "android") {
           await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
@@ -108,6 +116,7 @@ export function useGoogleDriveLogin() {
   );
 
   return {
+    isAvailable,
     isConfigured,
     isConnected: user !== null,
     user,

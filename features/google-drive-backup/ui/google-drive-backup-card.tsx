@@ -29,7 +29,7 @@ export function GoogleDriveBackupCard() {
   const [isPickerVisible, setIsPickerVisible] = useState(false);
 
   const { backups, status, listBackups, createBackup, restoreBackup, reset } = useBackupStore();
-  const { isConfigured, isConnected, user, getAccessToken, disconnect } = useGoogleDriveLogin();
+  const { isAvailable, isConfigured, isConnected, user, getAccessToken, disconnect } = useGoogleDriveLogin();
 
   const isBusy = status !== "idle";
 
@@ -140,7 +140,14 @@ export function GoogleDriveBackupCard() {
           ) : null}
         </View>
 
-        {!isConfigured ? (
+        {!isAvailable ? (
+          <View style={styles.configurationWarning}>
+            <ThemedText style={styles.warningTitle}>Google Drive indisponível</ThemedText>
+            <ThemedText style={styles.description}>
+              Instale uma versão do aplicativo com suporte ao Google Drive para usar o backup.
+            </ThemedText>
+          </View>
+        ) : !isConfigured ? (
           <View style={styles.configurationWarning}>
             <ThemedText style={styles.warningTitle}>Google Drive não configurado</ThemedText>
             <ThemedText style={styles.description}>
@@ -281,4 +288,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
     },
     pressed: { opacity: 0.72 },
   });
-

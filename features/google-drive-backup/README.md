@@ -19,3 +19,16 @@ development/preview, upload key, and Google Play App Signing as applicable. A mi
 appears as `DEVELOPER_ERROR`.
 
 The native sign-in package cannot run in Expo Go. Never commit OAuth client secrets.
+
+## Missing native module (`RNGoogleSignin`)
+
+This error means the installed app binary does not include Google Sign-In. Reloading Metro
+or clearing its cache cannot add native modules. The backup card remains unavailable until
+a compatible native build is installed.
+
+- Android: run `npm run android` to rebuild and install the app.
+- iOS: set `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, run `npx expo prebuild --platform ios`
+  to apply the URL scheme plugin, then `npm run ios` to rebuild and install the app.
+- For EAS builds, generate and install a new build for the desired platform/profile.
+
+Open the installed app instead of Expo Go.
