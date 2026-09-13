@@ -6,6 +6,7 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { formatSaleToPrint } from "@/features/printer/format-sale-to-print";
 import { usePrinterStore } from "@/features/printer/printer-store";
 import { usePrinter } from "@/features/printer/use-printer";
+import { PrinterConnectionCard } from "@/features/printer/printer-connection-card";
 import { useSaleStore } from "@/features/sales/sale-store";
 import type { SaleWithItems } from "@/features/sales/sale.types";
 import { Button, DatePickerField, ThemedText } from "@/shared/components";
@@ -33,7 +34,7 @@ export default function SalePrintScreen() {
   const [customPrintDate, setCustomPrintDate] = useState("");
 
   const { getSaleById } = useSaleStore();
-  const { receiptTitle, loadReceiptTitle } = usePrinterStore();
+  const { receiptTitle, loadReceiptTitle, connectionStatus, isBusy, printError } = usePrinterStore();
   const { print, status } = usePrinter();
 
   useFocusEffect(
@@ -85,13 +86,9 @@ export default function SalePrintScreen() {
     );
   }
 
-  const statusTextMap = {
-    idle: "Imprimir venda",
-    connecting: "Conectando à impressora...",
-    printing: "Imprimindo...",
-    success: "Venda impressa com sucesso!",
-    error: "Erro ao imprimir. Verifique a conexão.",
-  } as const;
+  const printLabel = status === "printing" ? "Enviando recibo…"
+    : connectionStatus === "connecting" ? "Conectando à impressora…"
+    : connectionStatus === "connected" ? "Imprimir venda" : "Conectar e imprimir";
 
   return (
     <StackFormWrapper title={sale ? `Imprimir venda #${sale.id}` : "Imprimir venda"}>
@@ -166,10 +163,13 @@ export default function SalePrintScreen() {
             </View>
           </View>
 
+          <PrinterConnectionCard />
+          {status === "success" ? <ThemedText accessibilityLiveRegion="polite">Recibo enviado à impressora.</ThemedText> : null}
+          {printError ? <ThemedText type="error" accessibilityLiveRegion="polite">{printError}</ThemedText> : null}
           <Button
-            label={statusTextMap[status]}
+            label={printLabel}
             onPress={printSale}
-            disabled={status !== "idle"}
+            disabled={isBusy || ["unknown", "unconfigured", "unavailable"].includes(connectionStatus)}
             size="md"
           />
         </>

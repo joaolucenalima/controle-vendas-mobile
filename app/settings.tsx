@@ -4,6 +4,7 @@ import { Alert, DevSettings, Pressable, StyleSheet, TextInput, View } from "reac
 import { resetDatabase } from "@/database/reset-database";
 import { GoogleDriveBackupCard } from "@/features/google-drive-backup/ui/google-drive-backup-card";
 import { usePrinterStore } from "@/features/printer/printer-store";
+import { PrinterConnectionCard } from "@/features/printer/printer-connection-card";
 import { ConnectToPrinterView } from "@/features/settings/components/connect-to-printer";
 import { Button, IconSymbol, ThemedText } from "@/shared/components";
 import { useStyles, type StylesProps } from "@/shared/hooks/use-styles";
@@ -20,7 +21,7 @@ export default function SettingsScreen() {
   const [isSavingPrinter, setIsSavingPrinter] = useState(false);
   const [isBluetoothModalVisible, setIsBluetoothModalVisible] = useState(false);
 
-  const { loadPrinterSettings, saveMacAddress, saveReceiptTitle } = usePrinterStore();
+  const { loadPrinterSettings, saveMacAddress, saveReceiptTitle, isBusy } = usePrinterStore();
 
   useEffect(() => {
     let isMounted = true;
@@ -76,10 +77,8 @@ export default function SettingsScreen() {
     try {
       setIsSavingPrinter(true);
 
-      if (printerMacAddress.length > 0) {
-        const savedMacAddress = await saveMacAddress(printerMacAddress);
-        setPrinterMacAddress(savedMacAddress ?? "");
-      }
+      const savedMacAddress = await saveMacAddress(printerMacAddress);
+      setPrinterMacAddress(savedMacAddress ?? "");
 
       if (printerReceiptTitle.length > 0) {
         const savedReceiptTitle = await saveReceiptTitle(printerReceiptTitle);
@@ -127,6 +126,7 @@ export default function SettingsScreen() {
           <ThemedText style={styles.cardTitle}>Impressora térmica</ThemedText>
         </View>
 
+        <PrinterConnectionCard settings disabled={isSavingPrinter || isBluetoothModalVisible} />
         <View style={styles.section}>
           <View style={styles.section}>
             <ThemedText style={styles.label}>Endereço MAC</ThemedText>
@@ -141,17 +141,17 @@ export default function SettingsScreen() {
               placeholderTextColor={theme.colors.textMuted}
               autoCapitalize="characters"
               autoCorrect={false}
-              editable={!isSavingPrinter}
+              editable={!isSavingPrinter && !isBusy}
               style={styles.input}
             />
 
             <ThemedText style={styles.sectionDescription}>
-              Ou obtenha o MAC se conectando à impressora.
+              Ou selecione um dispositivo Bluetooth e salve o endereço antes de conectar.
             </ThemedText>
 
             <Pressable
               style={({ pressed }) => [styles.bluetoothButton, pressed && { opacity: 0.7 }]}
-              disabled={isSavingPrinter}
+              disabled={isSavingPrinter || isBusy}
               onPress={() => setIsBluetoothModalVisible(true)}
             >
               <ThemedText style={styles.bluetoothButtonLabel}>Selecionar via Bluetooth</ThemedText>
@@ -179,7 +179,7 @@ export default function SettingsScreen() {
           label="Salvar configurações"
           onPress={handleSavePrinter}
           loading={isSavingPrinter}
-          disabled={isSavingPrinter}
+          disabled={isSavingPrinter || isBusy}
           size="md"
           style={styles.saveButton}
         />

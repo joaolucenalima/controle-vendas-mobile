@@ -1,7 +1,11 @@
 import { PrinterRepository } from "./printer-repository";
 
-function normalizeMacAddress(value: string): string {
-  return value.replace(/-/g, ":").trim().toUpperCase();
+export function normalizeMacAddress(value: string): string {
+  const trimmed = value.trim();
+  // iOS accessory identifiers are not necessarily MAC addresses.
+  return /^([\da-f]{2}[:-]){5}[\da-f]{2}$/i.test(trimmed)
+    ? trimmed.replace(/-/g, ":").toUpperCase()
+    : trimmed;
 }
 
 export const PrinterService = {

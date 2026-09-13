@@ -1,8 +1,8 @@
 import { IconSymbol, ThemedText } from "@/shared/components";
 import { StylesProps, useStyles } from "@/shared/hooks/use-styles";
 import { useTheme } from "@/shared/hooks/use-theme";
-import { ensureBluetoothEnabled } from "@/shared/utils/ensure-bluetooth-enabled";
-import { useEffect, useRef, useState } from "react";
+import { PrinterBluetooth } from "@/features/printer/printer-bluetooth";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -14,7 +14,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import BluetoothClassic, { BluetoothDevice } from "react-native-bluetooth-classic";
+import type { BluetoothDevice } from "react-native-bluetooth-classic";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface ConnectToPrinterViewProps {
@@ -36,39 +36,41 @@ export function ConnectToPrinterView({
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
 
   const rotateAnim = useRef(new Animated.Value(0)).current;
+  const generation = useRef(0);
+  const searching = useRef(false);
 
-  async function getAvailableDevices() {
+  const getAvailableDevices = useCallback(async () => {
+    if (searching.current) return;
+    searching.current = true;
+    const current = generation.current;
     setIsLoadingDevices(true);
 
     try {
-      const availableDevices = await BluetoothClassic.startDiscovery();
-      setDevices(availableDevices);
+      const availableDevices = await PrinterBluetooth.discover(() => current !== generation.current);
+      if (current === generation.current) setDevices(availableDevices);
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Falha ao obter dispositivos Bluetooth";
 
-      if (message.includes("already in discovery mode")) return;
-
-      Alert.alert("Erro", message);
+      if (current === generation.current) Alert.alert("Busca de impressoras", message);
     } finally {
-      setIsLoadingDevices(false);
+      searching.current = false;
+      if (current === generation.current) setIsLoadingDevices(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     if (!visible) return;
 
-    ensureBluetoothEnabled().then((isBluetoothEnabled) => {
-      while (!isBluetoothEnabled) {
-        Alert.alert("Bluetooth desativado", "Ative o Bluetooth para conectar a impressora.", [
-          { text: "Ligar", onPress: () => ensureBluetoothEnabled() },
-          { text: "Cancelar", style: "cancel", onPress: onClose },
-        ]);
-      }
-
-      getAvailableDevices();
-    });
-  }, [visible, onClose]);
+    setDevices([]);
+    setIsLoadingDevices(false);
+    void getAvailableDevices();
+    const current = generation.current;
+    return () => {
+      generation.current = current + 1;
+      void PrinterBluetooth.cancelDiscovery().catch(() => {});
+    };
+  }, [visible, getAvailableDevices]);
 
   useEffect(() => {
     let animation: Animated.CompositeAnimation | undefined;
@@ -143,7 +145,7 @@ export function ConnectToPrinterView({
 
             {devices.length > 0 && (
               <ThemedText style={[styles.description, { textAlign: "left" }]}>
-                Clique no dispositivo para salvar suas informações de conexão.
+                Selecione um dispositivo. Depois, salve as configurações e toque em Conectar.
               </ThemedText>
             )}
 
@@ -266,4 +268,3 @@ const createStyles = ({ colors, fonts }: StylesProps) =>
       fontWeight: "700",
     },
   });
-

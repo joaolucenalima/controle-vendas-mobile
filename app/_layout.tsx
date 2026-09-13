@@ -3,11 +3,13 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
+import { AppState } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { initializeDatabase } from "@/database/migrations/init";
 import { configureDatabase } from "@/database/sqlite";
 import { useTheme } from "@/shared/hooks/use-theme";
+import { usePrinterStore } from "@/features/printer/printer-store";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -19,6 +21,15 @@ export default function RootLayout() {
   const { navigationTheme } = useTheme();
 
   const [isDatabaseReady, setIsDatabaseReady] = useState(false);
+
+  useEffect(() => {
+    if (!isDatabaseReady) return;
+    const stop = usePrinterStore.getState().startMonitoring();
+    const subscription = AppState.addEventListener("change", state => {
+      if (state === "active") void usePrinterStore.getState().refreshConnection();
+    });
+    return () => { subscription.remove(); stop(); };
+  }, [isDatabaseReady]);
 
   useEffect(() => {
     let isMounted = true;
